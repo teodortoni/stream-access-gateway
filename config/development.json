@@ -1,0 +1,7 @@
+{
+    "app": {
+        "db": {
+            "synchronize": true
+        }
+    }
+}

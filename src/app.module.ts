@@ -1,0 +1,14 @@
+import { Module } from '@nestjs/common';
+import { AuthModule } from './auth/auth.module';
+import { PartnersModule } from './partners/partners.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { typeOrmConfig } from './config/typeorm.config';
+
+@Module({
+  imports: [
+    TypeOrmModule.forRoot(typeOrmConfig),
+    AuthModule,
+    PartnersModule
+  ],
+})
+export class AppModule {}
