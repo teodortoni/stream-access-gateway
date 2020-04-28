@@ -42,6 +42,17 @@ export class PartnersRepository extends Repository<Partners> {
         return bcrypt.hash(password, salt);
     }
 
+    async validatePartnerPassword(authCredentialsDto: AuthCredentialsDto): Promise<string> {
+        const { username, password } = authCredentialsDto;
+        const partner = await this.findOne({ username });
+
+        if (partner && await partner.validePassword(password)) {
+            return partner.username;
+        } else {
+            return null;
+        }
+    }
+
     private async generatePublicPrivateKeyPair(secret: string): Promise<object> {
         try {
             return crypto.generateKeyPairSync('rsa', {
