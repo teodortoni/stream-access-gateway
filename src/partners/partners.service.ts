@@ -13,12 +13,4 @@ export class PartnersService {
     signUp(authCredentialsDto: AuthCredentialsDto) {
         return this.partnersRepository.signUp(authCredentialsDto);
     }
-
-    async signIn(authCredentialsDto: AuthCredentialsDto) {
-        const username = await this.partnersRepository.validatePartnerPassword(authCredentialsDto);
-
-        if (!username) {
-            throw new UnauthorizedException('Invalid credentials');
-        }
-    }
 }
