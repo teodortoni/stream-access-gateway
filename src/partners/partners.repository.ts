@@ -42,12 +42,12 @@ export class PartnersRepository extends Repository<Partners> {
         return bcrypt.hash(password, salt);
     }
 
-    async validatePartnerPassword(authCredentialsDto: AuthCredentialsDto): Promise<string> {
+    async validatePartnerPassword(authCredentialsDto: AuthCredentialsDto): Promise<Partners> {
         const { username, password } = authCredentialsDto;
         const partner = await this.findOne({ username });
 
         if (partner && await partner.validePassword(password)) {
-            return partner.username;
+            return partner;
         } else {
             return null;
         }

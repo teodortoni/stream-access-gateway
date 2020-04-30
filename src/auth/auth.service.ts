@@ -12,14 +12,16 @@ export class AuthService {
         private jwtService: JwtService
     ) {}
     async signIn(authCredentialsDto: AuthCredentialsDto): Promise<{accessToken: string }> {
-        const username = await this.partnersRepository.validatePartnerPassword(authCredentialsDto);
+        const partner = await this.partnersRepository.validatePartnerPassword(authCredentialsDto);
 
-        if (!username) {
+        if (!partner.username) {
             throw new UnauthorizedException('Invalid credentials');
         }
 
-        const payload = { username };
-        const accessToken = await this.jwtService.sign(payload);
+        const privatekey = partner.privatekey;
+        console.log(privatekey);
+        const payload = { username: partner.username };
+        const accessToken = await this.jwtService.sign(payload, { expiresIn: 3600 });
 
         return { accessToken };
     }
