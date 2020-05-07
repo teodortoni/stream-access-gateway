@@ -1,6 +1,9 @@
 {
+    "api": {
+        "version": "v1"
+    },
     "app": {
-        "port":  3000,
+        "port":  3010,
         "db": {
             "type": "postgres",
             "host": "localhost",
@@ -9,6 +12,15 @@
             "password": "postgres",
             "database": "stream-access-gateway",
             "synchronize": false
+        },
+        "jwt": {
+            "algorithm": "RS256",
+            "expiresIn": 2630000
+        },
+        "crypto": {
+            "hmac": {
+                "algorithm": "sha256"
+            }
         }
     }
 }

@@ -1,7 +1,7 @@
 import { Test } from "@nestjs/testing";
 import { PartnersRepository } from "../partners.repository";
 import { v4 as uuid } from "uuid";
-import * as bcrypt from "bcrypt";
+import * as bcrypt from "bcryptjs";
 import { ConflictException, InternalServerErrorException } from "@nestjs/common";
 
 // Mocks the uuid() methood to generate iss (client_id)
