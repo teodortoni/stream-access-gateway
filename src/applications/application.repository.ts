@@ -13,7 +13,6 @@ export class ApplicationRepository extends Repository<Applications> {
             const application = new Applications();
             application.clientId = clientId;
             application.name = name;
-            application.revoked = false;
             await application.save();
             return application;
         } catch (error) {

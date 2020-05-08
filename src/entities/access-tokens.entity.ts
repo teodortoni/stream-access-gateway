@@ -1,29 +1,28 @@
-import { BaseEntity, Entity, Column, Unique, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable } from "typeorm";
+import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable } from "typeorm";
 import { Scopes } from "./scopes.entity";
 
 @Entity()
-@Unique(["jwt"])
 export class AccessTokens extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
-    @Column({ "type": "varchar", "length": 36 })
+    @Column({ "type": "uuid", "length": 36 })
     clientId: string;
 
-    @Column({ "type": "varchar", "length": 36 })
+    @Column({ "type": "uuid", "length": 36 })
     applicationId: string;
 
-    @Column({ "type": "bigint" })
-    credentialsId: number;
+    @Column({ "type": "uuid" })
+    credentialsId: string;
 
-    @Column({ "type": "text" })
-    jwt: string;
-
-    @Column({ "type": "boolean" })
-    revoked: boolean;
+    @Column({ "type": "datetime", "precision": 6, "nullable": true})
+    revokedAt: Date;
 
     @Column({ "type": "bigint", "width": 10 })
     expiresIn: number;
+
+    @Column({ "type": "datetime", "precision": 6 })
+    expiresAt: Date;
 
     @CreateDateColumn()
     createdAt: Date;

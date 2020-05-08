@@ -5,12 +5,12 @@
     "app": {
         "port":  3010,
         "db": {
-            "type": "postgres",
+            "type": "mysql",
             "host": "localhost",
-            "port": 5432,
-            "username": "postgres",
-            "password": "postgres",
-            "database": "stream-access-gateway",
+            "port": 3306,
+            "username": "",
+            "password": "",
+            "database": "",
             "synchronize": false
         },
         "jwt": {

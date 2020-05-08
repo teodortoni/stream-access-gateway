@@ -2,23 +2,18 @@ import { BaseEntity, PrimaryGeneratedColumn, Column, Entity, Unique, CreateDateC
 
 @Entity()
 @Unique(["clientId"])
-@Unique(["name"])
-@Unique(["secret"])
 export class Partners extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     clientId: string;
 
-    @Column({ "type": "varchar", "length": 191 })
+    @Column({ "type": "varchar", "length": 128 })
     name: string;
 
     @Column({ "type": "varchar", "length": 60 })
     secret: string;
 
-    @Column({ "type": "boolean", "width": 1, "nullable": true })
-    personalAccessPartner: boolean;
-
-    @Column({ "type": "boolean", "width": 1})
-    revoked: boolean;
+    @Column({ "type": "datetime", "precision": 6, "nullable": true})
+    revokedAt: Date;
 
     @CreateDateColumn()
     createdAt: Date;

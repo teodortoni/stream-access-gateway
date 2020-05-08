@@ -6,14 +6,14 @@ export class Applications extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
-    @Column({ "type": "varchar", "length": 36 })
+    @Column({ "type": "uuid", "length": 36 })
     clientId: string;
 
-    @Column({ "type": "varchar", "length": 120 })
+    @Column({ "type": "varchar", "length": 128 })
     name: string;
 
-    @Column({ "type": "boolean", "width": 1})
-    revoked: boolean;
+    @Column({ "type": "datetime", "precision": 6, "nullable": true})
+    revokedAt: Date;
 
     @CreateDateColumn()
     createdAt: Date;

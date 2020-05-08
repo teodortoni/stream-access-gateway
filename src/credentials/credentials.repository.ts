@@ -21,7 +21,6 @@ export class CredentialsRepository extends Repository<Credentials> {
             credentials.privateKey = keyPair['privateKey'];
             credentials.hmacSignature = await this.generateHmacSignature(secret);
             credentials.active = true;
-            credentials.revoked = false;
             credentials.save();
             return credentials;
         } catch (error) {

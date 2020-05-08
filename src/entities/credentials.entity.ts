@@ -5,13 +5,13 @@ import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, U
 // @Unique(["privateKey"])
 // @Unique(["hmacSignature"])
 export class Credentials extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
-    @Column({ "type": "varchar", "length": 36 })
+    @Column({ "type": "uuid", "length": 36 })
     clientId: string;
 
-    @Column({ "type": "varchar", "length": 36 })
+    @Column({ "type": "uuid", "length": 36 })
     applicationId: string;
 
     @Column({ "type": "text" })
@@ -26,8 +26,8 @@ export class Credentials extends BaseEntity {
     @Column({ "type": "boolean" })
     active: boolean;
 
-    @Column({ "type": "boolean" })
-    revoked: boolean;
+    @Column({ "type": "datetime", "precision": 6, "nullable": true})
+    revokedAt: Date;
 
     @CreateDateColumn()
     createdAt: Date;
