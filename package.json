@@ -19,7 +19,7 @@
     "testcov": "jest --coverage",
     "testdebug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "teste2e": "jest --config ./test/jest-e2e.json",
-    "generate:ormconfig": "rm ormconfig.json && ts-node scripts/generateTypeORMConfigs.ts",
+    "generate:ormconfig": "rm -f ormconfig.json && ts-node scripts/generateTypeORMConfigs.ts",
     "migration:create": "ts-node node_modules/.bin/typeorm migration:create -n",
     "migration:generate": "ts-node node_modules/.bin/typeorm migration:generate -n",
     "migrations": "node_modules/.bin/ts-node node_modules/.bin/typeorm migration:run",
