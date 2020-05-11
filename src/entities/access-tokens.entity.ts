@@ -12,8 +12,11 @@ export class AccessTokens extends BaseEntity {
     @Column({ "type": "uuid", "length": 36 })
     applicationId: string;
 
-    @Column({ "type": "uuid" })
+    @Column({ "type": "uuid", "length": 36 })
     credentialsId: string;
+
+    @Column()
+    signature: string;
 
     @Column({ "type": "datetime", "precision": 6, "nullable": true})
     revokedAt: Date;

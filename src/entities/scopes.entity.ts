@@ -6,7 +6,7 @@ export class Scopes extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({ "type": "varchar", "length": 120 })
+    @Column({ "type": "varchar", "length": 64 })
     name: string;
 
     @Column({ "type": "datetime", "precision": 6, "nullable": true})
