@@ -13,6 +13,8 @@ import { CredentialsRepository } from 'src/credentials/credentials.repository';
 import { CredentialsModule } from 'src/credentials/credentials.module';
 import { ScopesModule } from 'src/scopes/scopes.module';
 import { ScopesRepository } from 'src/scopes/scopes.repository';
+import { AccessTokenService } from 'src/access-token/access-token.service';
+import { AccessTokenRepository } from 'src/access-token/access-token.repository';
 import configs from 'config/defaultconfigs';
 import * as jwt from 'jsonwebtoken';
 
@@ -66,6 +68,8 @@ const algorithm: jwt.Algorithm = configs().app.jwt.algorithm as jwt.Algorithm;
     CredentialsService,
     CredentialsRepository,
     ScopesRepository,
+    AccessTokenService,
+    AccessTokenRepository
   ],
   exports: [
     PassportModule,
