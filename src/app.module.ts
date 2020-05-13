@@ -21,6 +21,7 @@ import defaultconfigs from '../config/defaultconfigs';
     }),
     TypeOrmModule.forRoot(typeOrmConfig),
     ScopesModule,
+    AccessTokenModule,
   ],
   providers: [],
 })
