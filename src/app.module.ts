@@ -8,6 +8,7 @@ import { ApplicationsModule } from './applications/applications.module';
 import { CredentialsModule } from './credentials/credentials.module';
 import { ScopesModule } from './scopes/scopes.module';
 import defaultconfigs from '../config/defaultconfigs';
+import { AccessTokenModule } from './access-token/access-token.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import defaultconfigs from '../config/defaultconfigs';
     }),
     TypeOrmModule.forRoot(typeOrmConfig),
     ScopesModule,
+    AccessTokenModule,
   ],
   providers: [],
 })
