@@ -7,7 +7,12 @@ import * as jwt from "jsonwebtoken";
 import { Connection } from "typeorm";
 import { ReplicatePartnerJwtDto } from "./dto/replicate-partner-jwt.dto";
 import { ApplicationRepository } from "src/applications/application.repository";
+<<<<<<< HEAD
 import { ConfigService } from "@nestjs/config";
+=======
+import { AccessTokenService } from "src/access-token/access-token.service";
+import { AccessTokenDataDto } from "src/access-token/dto/access-token.data.dto";
+>>>>>>> Implements AccessTokenService with the auth service to return access token
 
 @Injectable()
 export class AuthService {
@@ -20,6 +25,7 @@ export class AuthService {
         private configService: ConfigService,
         @InjectRepository(PartnersRepository)
         private partnersRepository: PartnersRepository,
+        private accessTokenService: AccessTokenService,
         private jwtService: JwtService,
         private readonly connection: Connection,
     ) { 
@@ -67,17 +73,29 @@ export class AuthService {
                 algorithms: [this.configService.get<string>('app.jwt.algorithm') as jwt.Algorithm],
             };
 
-            const decoded = await jwt.verify(signedJwt, credentials[0].publicKey, options);
+            const decodeVerified = await jwt.verify(signedJwt, credentials[0].publicKey, options);
             this.logger.log(`Partner with clientId (${decoded['clientId']}) has made a request for authorization. JWT verified successfully.`);
 
             // Create access token
-            const accessToken = "someaccesstoken";
+            const accessTokenData: AccessTokenDataDto = {
+                clientId: decoded.clientId,
+                applicationId: decoded.applicationId,
+                credentialsId: decoded.id,
+                iat: decoded.iat,
+                exp: decoded.exp
+            };
+
+            const accessToken = await this.accessTokenService.createAccessTokens(accessTokenData, credentials[0].privateKey);
 
             // Return access token
             return {
-                "access_token": accessToken,
+                "access_token": accessToken.signature,
                 "token_type": "Bearer",
+<<<<<<< HEAD
                 "expires_in": this.configService.get<string>('app.jwt.expiresIn')
+=======
+                "expires_in": accessToken.expiresIn
+>>>>>>> Implements AccessTokenService with the auth service to return access token
             };
         } catch (error) {
             this.logger.error(`Method: jwt.verify, signedJwt: ${signedJwt}, publickey: ${credentials[0].publicKey}`, error.stack);
