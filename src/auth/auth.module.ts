@@ -66,6 +66,8 @@ const algorithm: jwt.Algorithm = configs().app.jwt.algorithm as jwt.Algorithm;
     CredentialsService,
     CredentialsRepository,
     ScopesRepository,
+    AccessTokenService,
+    AccessTokenRepository
   ],
   exports: [
     PassportModule,
