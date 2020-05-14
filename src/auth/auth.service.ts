@@ -3,16 +3,18 @@ import { JwtService } from "@nestjs/jwt";
 import { PartnersRepository } from "src/partners/partners.repository";
 import { CredentialsRepository } from "src/credentials/credentials.repository";
 import { InjectRepository } from "@nestjs/typeorm";
-import { PartnerAuthJwt } from "./dto/partner-auth-jwt.dto";
 import * as jwt from "jsonwebtoken";
 import * as config from "config";
 import { Connection } from "typeorm";
+import { ReplicatePartnerJwtDto } from "./dto/replicate-partner-jwt.dto";
+import { ApplicationRepository } from "src/applications/application.repository";
 
 @Injectable()
 export class AuthService {
     logger = new Logger("AuthService");
 
     private credRepo: CredentialsRepository;
+    private applicationRepo: ApplicationRepository;
 
     constructor(
         @InjectRepository(PartnersRepository)
@@ -25,6 +27,7 @@ export class AuthService {
          * that gets thrown if injected the same way as PartnersRepository
          */
         this.credRepo = this.connection.getCustomRepository(CredentialsRepository);
+        this.applicationRepo = this.connection.getCustomRepository(ApplicationRepository);
     }
 
     async handleAuthorization(req): Promise<object> {
@@ -32,7 +35,7 @@ export class AuthService {
         const bearerArray = req.headers.authorization.split('Bearer');
         const signedJwt = bearerArray[1].trim();
         const decoded = jwt.decode(signedJwt, {json: true});
-        const { clientId, applicationId } = decoded;
+        const { clientId, applicationId, scopes } = decoded;
         
         // Validate Partner
         const partner = await this.partnersRepository.findOne({ clientId });
@@ -44,9 +47,18 @@ export class AuthService {
         // Validate Credentials
         const credentials = await this.credRepo.find({ where: { clientId, applicationId } });
         if (credentials.length < 1) {
-            this.logger.debug(`Method: handleAuthorization, creedentials not found, decoded data: ${JSON.stringify(decoded)}`);
+            this.logger.debug(`Method: handleAuthorization, credentials not found, decoded data: ${JSON.stringify(decoded)}`);
             throw new UnauthorizedException();
         }
+
+        // Validate Scopes
+        const scopeNames = await this.applicationRepo.getApplicationScopesNames(applicationId);
+        scopes.split(',').forEach(inputScope => {
+            if (!scopeNames.includes(inputScope.trim())) {
+                this.logger.debug(`Method: handleAuthorization, scopes do not match, decoded data: ${JSON.stringify(decoded)}, application scopes: ${JSON.stringify(scopeNames)}`);
+                throw new UnauthorizedException();
+            }
+        });
 
         // Verify JWT
         try {
@@ -67,7 +79,7 @@ export class AuthService {
                 "expires_in": config.get('app.jwt.expiresIn')
             };
         } catch (error) {
-            // this.logger.debug(`Method: jwt.verify, signedJwt: ${signedJwt}, publickey: ${partner.publickey}`, error.stack);
+            this.logger.error(`Method: jwt.verify, signedJwt: ${signedJwt}, publickey: ${credentials[0].publicKey}`, error.stack);
             throw new UnauthorizedException();
         }
     }
@@ -77,7 +89,7 @@ export class AuthService {
         const bearerArray = req.headers.authorization.split('Bearer');
         const signedJwt = bearerArray[1].trim();
         const decoded = jwt.decode(signedJwt, {json: true});
-        const { clientId, applicationId } = decoded;
+        const { clientId, applicationId, scopes } = decoded;
         
         // Validate Partner
         const partner = await this.partnersRepository.findOne({ clientId });
@@ -92,6 +104,15 @@ export class AuthService {
             this.logger.debug(`Method: handleAuthorization, creedentials not found, decoded data: ${JSON.stringify(decoded)}`);
             throw new UnauthorizedException();
         }
+
+        // Validate Scopes
+        const scopeNames = await this.applicationRepo.getApplicationScopesNames(applicationId);
+        scopes.split(',').forEach(inputScope => {
+            if (!scopeNames.includes(inputScope.trim())) {
+                this.logger.debug(`Method: handleAuthorization, scopes do not match, decoded data: ${JSON.stringify(decoded)}, application scopes: ${JSON.stringify(scopeNames)}`);
+                throw new UnauthorizedException();
+            }
+        });
 
         // Verify JWT
         try {
@@ -112,18 +133,23 @@ export class AuthService {
                 "expires_in": config.get('app.jwt.expiresIn')
             };
         } catch (error) {
-            // this.logger.debug(`Method: jwt.verify, signedJwt: ${signedJwt}, publickey: ${partner.publickey}`, error.stack);
+            this.logger.error(`Method: jwt.verify, signedJwt: ${signedJwt}, publickey: ${credentials[0].publicKey}`, error.stack);
             throw new UnauthorizedException();
         }
     }
 
-    async replicatePartnerAuthorizationJwt(clientId: string, applicationId: string): Promise<{ accessToken: string }> {
+    /* ------------- BELOW THIS LINE FOR TESTING PURPOSES. MUST BE REMOVED IF NOT NEEDED ------------- */
+
+    async replicatePartnerAuthorizationJwt(data: ReplicatePartnerJwtDto): Promise<{ accessToken: string }> {
+        const { clientId, applicationId, scopes } = data;
+        console.log(applicationId);
         const partner = await this.partnersRepository.findOne(clientId);
-        const credentials = await this.credRepo.find({ where: [clientId, applicationId] });
+        const credentials = await this.credRepo.find({ where: { clientId, applicationId } });
 
         const jwtPayload = {
             clientId: credentials[0].clientId,
             applicationId: credentials[0].applicationId,
+            scopes,
             key: credentials[0].privateKey,
             passphrase: partner.secret
         };
@@ -133,12 +159,14 @@ export class AuthService {
         return { accessToken };
     }
 
-    async replicatePartnerAuthorizationJwtWithHmac(clientId: string, applicationId: string): Promise<{ accessToken: string }> {
-        const credentials = await this.credRepo.find({ where: [clientId, applicationId] });
+    async replicatePartnerAuthorizationJwtWithHmac(data: ReplicatePartnerJwtDto): Promise<{ accessToken: string }> {
+        const { clientId, applicationId, scopes } = data;
+        const credentials = await this.credRepo.find({ where: { clientId, applicationId } });
 
         const jwtPayload = {
             clientId: credentials[0].clientId,
             applicationId: credentials[0].applicationId,
+            scopes,
             key: credentials[0].hmacSignature,
             passphrase: "hmacsignature"
         };

@@ -7,6 +7,7 @@ import { ApplicationsModule } from 'src/applications/applications.module';
 import { ApplicationsService } from 'src/applications/applications.service';
 import { CredentialsService } from 'src/credentials/credentials.service';
 import { CredentialsModule } from 'src/credentials/credentials.module';
+import { ScopesRepository } from 'src/scopes/scopes.repository';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { CredentialsModule } from 'src/credentials/credentials.module';
   providers: [
     PartnersService,
     ApplicationsService,
-    CredentialsService
+    CredentialsService,
+    ScopesRepository,
   ]
 })
 export class PartnersModule {}

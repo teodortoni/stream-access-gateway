@@ -3,7 +3,7 @@ import * as bcrypt from "bcryptjs";
 import { InternalServerErrorException, Logger, ConflictException } from "@nestjs/common";
 import { PartnerApplicationRegisterData } from "./dto/partner-application-register.data.dto";
 import { Partners } from "src/entities/partners.entity";
-import { ApplicationDataDto } from "src/applications/dto/application.data.dto";
+import { ApplicationDataDto } from "src/applications/dto/application-data.dto";
 import { ApplicationsService } from "src/applications/applications.service";
 import { CredentialsService } from "src/credentials/credentials.service";
 import { CredentialDataDto } from "src/credentials/dto/credential-data.dto";
@@ -15,16 +15,16 @@ export class PartnersRepository extends Repository<Partners> {
     async register(
         registerData: PartnerApplicationRegisterData,
         applicationsService: ApplicationsService,
-        credentialsService: CredentialsService,
+        credentialsService: CredentialsService
     ): Promise<object> {
-        const { clientName, clientApplicationName } = registerData;
+        const { clientName, clientApplicationName, scopes } = registerData;
 
         let partner;
         try {
             partner = this.create();
             partner.name = clientName;
             partner.secret = await bcrypt.genSalt();
-            partner.revoked = false;
+            partner.revokedAt = false;
             await partner.save();
         } catch (error) {
             this.logger.error(`Method: register, data: ${JSON.stringify(registerData)}, error code: ${error.code}`, error.stack);
@@ -33,7 +33,8 @@ export class PartnersRepository extends Repository<Partners> {
 
         const applicationData: ApplicationDataDto = {
             name: clientApplicationName,
-            clientId: partner.clientId
+            clientId: partner.clientId,
+            scopes
         };
 
         // Create application

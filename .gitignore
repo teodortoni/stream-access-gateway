@@ -38,3 +38,5 @@ lerna-debug.log*
 
 # TypeORM 
 ormconfig.json
+
+notes.js

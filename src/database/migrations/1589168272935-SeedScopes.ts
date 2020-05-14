@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, getRepository } from "typeorm";
+import { MigrationInterface, QueryRunner } from "typeorm";
 import { v4 as uuid } from "uuid";
 
 export class SeedScopes1589168272935 implements MigrationInterface {

@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApplicationRepository } from './application.repository';
 import { ApplicationsService } from './applications.service';
 import { ApplicationsController } from './applications.controller';
+import { ScopesRepository } from 'src/scopes/scopes.repository';
 
 @Module({
     imports: [
@@ -10,7 +11,8 @@ import { ApplicationsController } from './applications.controller';
     ],
     providers: [
         ApplicationsService,
-        ApplicationRepository
+        ApplicationRepository,
+        ScopesRepository
     ],
     controllers: [ApplicationsController],
     exports: [

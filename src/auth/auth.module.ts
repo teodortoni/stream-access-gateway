@@ -5,7 +5,6 @@ import { PartnersService } from 'src/partners/partners.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PartnersRepository } from 'src/partners/partners.repository';
 import { PassportModule } from '@nestjs/passport';
-import * as jwt from 'jsonwebtoken';
 import { JwtModule, JwtSecretRequestType } from '@nestjs/jwt';
 import * as config from 'config';
 import { PartnerAuthJwtStrategy } from './partner-auth-jwt.strategy';
@@ -14,6 +13,8 @@ import { ApplicationRepository } from 'src/applications/application.repository';
 import { CredentialsService } from 'src/credentials/credentials.service';
 import { CredentialsRepository } from 'src/credentials/credentials.repository';
 import { CredentialsModule } from 'src/credentials/credentials.module';
+import { ScopesModule } from 'src/scopes/scopes.module';
+import { ScopesRepository } from 'src/scopes/scopes.repository';
 
 @Module({
   imports: [
@@ -22,7 +23,6 @@ import { CredentialsModule } from 'src/credentials/credentials.module';
       secretOrKeyProvider: (
         requestType: JwtSecretRequestType,
         tokenOrPayload: string | object | Buffer,
-        verifyOrSignOrOptions?: jwt.VerifyOptions | jwt.SignOptions
       ) => {
         switch (requestType) {
           case JwtSecretRequestType.SIGN:
@@ -52,6 +52,7 @@ import { CredentialsModule } from 'src/credentials/credentials.module';
     }),
     TypeOrmModule.forFeature([PartnersRepository, CredentialsRepository]),
     CredentialsModule,
+    ScopesModule,
   ],
   controllers: [AuthController],
   providers: [
@@ -62,6 +63,7 @@ import { CredentialsModule } from 'src/credentials/credentials.module';
     ApplicationRepository,
     CredentialsService,
     CredentialsRepository,
+    ScopesRepository,
   ],
   exports: [
     PassportModule,

@@ -14,7 +14,7 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
     username: process.env.USERNAME || dbConfig.username,
     password: process.env.PASSWORD || dbConfig.password,
     database: process.env.DB_NAME || dbConfig.database,
-    entities: [__dirname + '/../**/*.entity.{js,ts}'],
+    entities: [__dirname + '/../**/*.entity{.js,.ts}'],
     migrationsTableName: process.env.MIGRATIONS_TABLE_NAME || dbConfig.migrationsTableName,
     migrations: [__dirname + '/../database/migrations/*.{js,ts}'],
     cli: {

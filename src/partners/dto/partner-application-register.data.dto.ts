@@ -11,4 +11,8 @@ export class PartnerApplicationRegisterData {
     @MinLength(4)
     @MaxLength(120)
     clientApplicationName: string;
+
+    @IsNotEmpty()
+    @IsString()
+    scopes: string;
 }

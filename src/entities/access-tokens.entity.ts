@@ -1,5 +1,4 @@
-import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable } from "typeorm";
-import { Scopes } from "./scopes.entity";
+import { BaseEntity, Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class AccessTokens extends BaseEntity {
@@ -32,8 +31,4 @@ export class AccessTokens extends BaseEntity {
 
     @UpdateDateColumn()
     updatedAt: Date;
-
-    @ManyToMany(type => Scopes)
-    @JoinTable()
-    scopes: Scopes[];
 }
