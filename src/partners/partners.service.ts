@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PartnersRepository } from './partners.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PartnerApplicationRegisterData } from './dto/partner-application-register.data.dto';
-import { ApplicationsService } from 'src/applications/applications.service';
-import { CredentialsService } from 'src/credentials/credentials.service';
+import { ApplicationsService } from '../applications/applications.service';
+import { CredentialsService } from '../credentials/credentials.service';
 
 @Injectable()
 export class PartnersService {

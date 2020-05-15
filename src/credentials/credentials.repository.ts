@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { Credentials } from 'src/entities/credentials.entity';
+import { Credentials } from '../entities/credentials.entity';
 import { Logger, InternalServerErrorException } from '@nestjs/common';
 import { CredentialDataDto } from './dto/credential-data.dto';
 import * as crypto from "crypto";

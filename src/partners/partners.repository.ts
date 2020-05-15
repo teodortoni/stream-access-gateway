@@ -2,9 +2,9 @@ import { Repository, EntityRepository } from "typeorm";
 import * as bcrypt from "bcryptjs";
 import { InternalServerErrorException, Logger, ConflictException } from "@nestjs/common";
 import { PartnerApplicationRegisterData } from "./dto/partner-application-register.data.dto";
-import { Partners } from "src/entities/partners.entity";
+import { Partners } from "../entities/partners.entity";
 import { ApplicationDataDto } from "src/applications/dto/application-data.dto";
-import { ApplicationsService } from "src/applications/applications.service";
+import { ApplicationsService } from "../applications/applications.service";
 import { CredentialsService } from "src/credentials/credentials.service";
 import { CredentialDataDto } from "src/credentials/dto/credential-data.dto";
 

@@ -1,5 +1,5 @@
 import { Repository, EntityRepository, EntityManager, getManager } from "typeorm";
-import { Scopes } from "src/entities/scopes.entity";
+import { Scopes } from "../entities/scopes.entity";
 import { Logger } from "@nestjs/common";
 
 @EntityRepository(Scopes)

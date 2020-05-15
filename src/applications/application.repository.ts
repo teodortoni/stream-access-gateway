@@ -1,9 +1,9 @@
 import { Repository, EntityRepository, getManager, EntityManager } from "typeorm";
 import { InternalServerErrorException, Logger, ConflictException } from "@nestjs/common";
 import { ApplicationDataDto } from "./dto/application-data.dto";
-import { Applications } from "src/entities/applications.entity";
-import { ScopesRepository } from "src/scopes/scopes.repository";
-import { Scopes } from "src/entities/scopes.entity";
+import { Applications } from "../entities/applications.entity";
+import { ScopesRepository } from "../scopes/scopes.repository";
+import { Scopes } from "../entities/scopes.entity";
 import { ApplicationScopesDto } from "./dto/application-scopes.dto";
 
 @EntityRepository(Applications)
