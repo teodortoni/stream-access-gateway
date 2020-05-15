@@ -9,7 +9,7 @@ import * as config from "config";
 export class AccessTokenRepository extends Repository<AccessTokens> {
     private logger = new Logger('AccessTokenRepository');
 
-    async createAccessTokens(accessTokenDataDto: AccessTokenDataDto, privateKey: string): Promise<AccessTokens> {
+    async createAccessToken(accessTokenDataDto: AccessTokenDataDto, privateKey: string): Promise<AccessTokens> {
         const { clientId, applicationId, credentialsId, exp } = accessTokenDataDto;
 
         try {
@@ -27,7 +27,7 @@ export class AccessTokenRepository extends Repository<AccessTokens> {
         }
     }
 
-    async generateSignature(accessTokenDataDto: AccessTokenDataDto, privateKey: string): Promise<string> {
+    private async generateSignature(accessTokenDataDto: AccessTokenDataDto, privateKey: string): Promise<string> {
         const jwtPayload = {
             clientId: accessTokenDataDto.clientId,
             applicationId: accessTokenDataDto.applicationId,
