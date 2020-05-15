@@ -82,7 +82,7 @@ export class AuthService {
                 exp: decoded.exp
             };
 
-            const accessToken = await this.accessTokenService.createAccessTokens(accessTokenData, credentials[0].privateKey);
+            const accessToken = await this.accessTokenService.createAccessToken(accessTokenData, credentials[0].privateKey);
 
             // Return access token
             return {
