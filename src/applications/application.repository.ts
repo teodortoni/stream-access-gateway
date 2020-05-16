@@ -19,7 +19,7 @@ export class ApplicationRepository extends Repository<Applications> {
     async createApplication(applicationDataDto: ApplicationDataDto): Promise<Applications> {
         const { name, clientId, scopes } = applicationDataDto;
         try {
-            const application = new Applications();
+            const application = this.manager.create(Applications);
             application.clientId = clientId;
             application.name = name;
 

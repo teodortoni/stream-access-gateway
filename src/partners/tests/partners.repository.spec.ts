@@ -53,7 +53,8 @@ describe('PartnersRepository', () => {
     });
 
     describe('register', () => {
-        let save, clientId, applicationId, clientSecret, salt, hash, keyPair;
+        let save, clientId, applicationId, clientSecret, hash;
+        // let salt, keyPair;
 
         beforeEach(async () => {
             // Mock variables
@@ -104,7 +105,7 @@ describe('PartnersRepository', () => {
         });
 
         it('Partner and application with scopes failed with InternalServerErrorException', () => {
-            save.mockRejectedValue(InternalServerErrorException);
+            save.mockRejectedValue({ code: 'any' });
             expect(partnersRepository.register(mockAuthCredentialsDto)).rejects.toThrow(new InternalServerErrorException);
         });
     });

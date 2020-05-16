@@ -52,7 +52,7 @@ describe('PartnerService', () => {
                 clientSecret
             };
             
-            // Mock partners.repository signUp
+            // Mock partners.repository register
             partnersRepository.register.mockResolvedValue(mockRegisterResults);
 
             const result = await partnersService.register(mockAuthCredentialsDto);
