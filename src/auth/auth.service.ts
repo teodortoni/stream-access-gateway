@@ -70,16 +70,16 @@ export class AuthService {
                 algorithms: [this.configService.get<string>('app.jwt.algorithm') as jwt.Algorithm],
             };
 
-            const decodeVerified = await jwt.verify(signedJwt, credentials[0].publicKey, options);
-            this.logger.log(`Partner with clientId (${decoded['clientId']}) has made a request for authorization. JWT verified successfully.`);
+            const verified = await jwt.verify(signedJwt, credentials[0].publicKey, options);
+            this.logger.log(`Partner with clientId (${verified['clientId']}) has made a request for authorization. JWT verified successfully.`);
 
             // Create access token
             const accessTokenData: AccessTokenDataDto = {
-                clientId: decoded.clientId,
-                applicationId: decoded.applicationId,
-                credentialsId: decoded.id,
-                iat: decoded.iat,
-                exp: decoded.exp
+                clientId: verified['clientId'],
+                applicationId: verified['applicationId'],
+                credentialsId: verified['id'],
+                iat: verified['iat'],
+                exp: verified['exp']
             };
 
             const accessToken = await this.accessTokenService.createAccessToken(accessTokenData, credentials[0].privateKey);
