@@ -131,7 +131,7 @@ export class AuthService {
             };
             const verified = await jwt.verify(signedJwt, credentials[0].hmacSignature, options);
             this.logger.log(`Partner with clientId (${verified['clientId']}) has made a request for authorization. JWT verified successfully.`);
-            console.log(verified)
+
             // Create access token
             const accessTokenData: AccessTokenDataDto = {
                 clientId: verified['clientId'],
@@ -160,7 +160,6 @@ export class AuthService {
 
     async replicatePartnerAuthorizationJwt(data: ReplicatePartnerJwtDto): Promise<{ accessToken: string }> {
         const { clientId, applicationId, scopes } = data;
-        console.log(applicationId);
         const partner = await this.partnersRepository.findOne(clientId);
         const credentials = await this.credRepo.find({ where: { clientId, applicationId } });
 
