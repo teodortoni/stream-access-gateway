@@ -77,7 +77,7 @@ export class AuthService {
             const accessTokenData: AccessTokenDataDto = {
                 clientId: verified['clientId'],
                 applicationId: verified['applicationId'],
-                credentialsId: verified['id'],
+                credentialsId: credentials[0].id,
                 iat: verified['iat'],
                 exp: verified['exp']
             };
@@ -131,18 +131,26 @@ export class AuthService {
             const options: jwt.VerifyOptions = {
                 algorithms: ['HS256'],
             };
-
-            const decoded = await jwt.verify(signedJwt, credentials[0].hmacSignature, options);
-            this.logger.log(`Partner with clientId (${decoded['clientId']}) has made a request for authorization. JWT verified successfully.`);
-
+            const verified = await jwt.verify(signedJwt, credentials[0].hmacSignature, options);
+            this.logger.log(`Partner with clientId (${verified['clientId']}) has made a request for authorization. JWT verified successfully.`);
+            console.log(verified)
             // Create access token
-            const accessToken = "someaccesstoken";
+            const accessTokenData: AccessTokenDataDto = {
+                clientId: verified['clientId'],
+                applicationId: verified['applicationId'],
+                credentialsId: credentials[0].id,
+                iat: verified['iat'],
+                exp: verified['exp']
+            };
+
+
+            const accessToken = await this.accessTokenService.createAccessToken(accessTokenData, credentials[0].hmacSignature);
 
             // Return access token
             return {
-                "access_token": accessToken,
+                "access_token": accessToken.signature,
                 "token_type": "Bearer",
-                "expires_in": this.configService.get<string>('app.jwt.expiresIn')
+                "expires_in": accessToken.expiresIn
             };
         } catch (error) {
             this.logger.error(`Method: jwt.verify, signedJwt: ${signedJwt}, publickey: ${credentials[0].publicKey}`, error.stack);
