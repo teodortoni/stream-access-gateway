@@ -3,13 +3,16 @@ import { Credentials } from '../entities/credentials.entity';
 import { Logger, InternalServerErrorException } from '@nestjs/common';
 import { CredentialDataDto } from './dto/credential-data.dto';
 import * as crypto from "crypto";
-import * as config from "config";
+import { ConfigService } from '@nestjs/config';
 
 @EntityRepository(Credentials)
 export class CredentialsRepository extends Repository<Credentials> {
     private logger = new Logger('CredentialsRepository');
 
-    constructor(public manager: EntityManager = getManager()) {
+    constructor(
+        public manager: EntityManager = getManager(),
+        private configService: ConfigService
+    ) {
         super();
     }
 
@@ -56,7 +59,7 @@ export class CredentialsRepository extends Repository<Credentials> {
 
     private async generateHmacSignature(secret: string): Promise<string> {
         try {
-            const hmac = crypto.createHmac(config.get('app.crypto.hmac.algorithm'), secret);
+            const hmac = crypto.createHmac(this.configService.get<string>('app.crypto.hmac.algorithm'), secret);
             return hmac.digest('hex');
         } catch (error) {
             this.logger.debug(`Method: generateHmacSignature, secret: ${secret}, error code: ${error.code}`, error.stack);

@@ -6,8 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PartnersRepository } from 'src/partners/partners.repository';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule, JwtSecretRequestType } from '@nestjs/jwt';
-import * as config from 'config';
-import { PartnerAuthJwtStrategy } from './partner-auth-jwt.strategy';
 import { ApplicationsService } from 'src/applications/applications.service';
 import { ApplicationRepository } from 'src/applications/application.repository';
 import { CredentialsService } from 'src/credentials/credentials.service';
@@ -15,6 +13,11 @@ import { CredentialsRepository } from 'src/credentials/credentials.repository';
 import { CredentialsModule } from 'src/credentials/credentials.module';
 import { ScopesModule } from 'src/scopes/scopes.module';
 import { ScopesRepository } from 'src/scopes/scopes.repository';
+import configs from 'config/defaultconfigs';
+import * as jwt from 'jsonwebtoken';
+
+const expiresIn = configs().app.jwt.expiresIn;
+const algorithm: jwt.Algorithm = configs().app.jwt.algorithm as jwt.Algorithm;
 
 @Module({
   imports: [
@@ -43,11 +46,11 @@ import { ScopesRepository } from 'src/scopes/scopes.repository';
         }
       },
       signOptions: {
-        expiresIn: config.get('app.jwt.expiresIn'),
-        algorithm: config.get('app.jwt.algorithm')
+        expiresIn,
+        algorithm
       },
       verifyOptions: {
-        algorithms: [config.get('app.jwt.algorithm')]
+        algorithms: [algorithm]
       }
     }),
     TypeOrmModule.forFeature([PartnersRepository, CredentialsRepository]),
@@ -58,7 +61,6 @@ import { ScopesRepository } from 'src/scopes/scopes.repository';
   providers: [
     AuthService,
     PartnersService,
-    PartnerAuthJwtStrategy,
     ApplicationsService,
     ApplicationRepository,
     CredentialsService,
@@ -67,7 +69,6 @@ import { ScopesRepository } from 'src/scopes/scopes.repository';
   ],
   exports: [
     PassportModule,
-    PartnerAuthJwtStrategy,
   ]
 })
 export class AuthModule {}

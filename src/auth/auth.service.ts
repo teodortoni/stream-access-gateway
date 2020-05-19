@@ -4,10 +4,10 @@ import { PartnersRepository } from "src/partners/partners.repository";
 import { CredentialsRepository } from "src/credentials/credentials.repository";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as jwt from "jsonwebtoken";
-import * as config from "config";
 import { Connection } from "typeorm";
 import { ReplicatePartnerJwtDto } from "./dto/replicate-partner-jwt.dto";
 import { ApplicationRepository } from "src/applications/application.repository";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class AuthService {
@@ -17,6 +17,7 @@ export class AuthService {
     private applicationRepo: ApplicationRepository;
 
     constructor(
+        private configService: ConfigService,
         @InjectRepository(PartnersRepository)
         private partnersRepository: PartnersRepository,
         private jwtService: JwtService,
@@ -63,7 +64,7 @@ export class AuthService {
         // Verify JWT
         try {
             const options: jwt.VerifyOptions = {
-                algorithms: [config.get('app.jwt.algorithm')],
+                algorithms: [this.configService.get<string>('app.jwt.algorithm') as jwt.Algorithm],
             };
 
             const decoded = await jwt.verify(signedJwt, credentials[0].publicKey, options);
@@ -76,7 +77,7 @@ export class AuthService {
             return {
                 "access_token": accessToken,
                 "token_type": "Bearer",
-                "expires_in": config.get('app.jwt.expiresIn')
+                "expires_in": this.configService.get<string>('app.jwt.expiresIn')
             };
         } catch (error) {
             this.logger.error(`Method: jwt.verify, signedJwt: ${signedJwt}, publickey: ${credentials[0].publicKey}`, error.stack);
@@ -130,7 +131,7 @@ export class AuthService {
             return {
                 "access_token": accessToken,
                 "token_type": "Bearer",
-                "expires_in": config.get('app.jwt.expiresIn')
+                "expires_in": this.configService.get<string>('app.jwt.expiresIn')
             };
         } catch (error) {
             this.logger.error(`Method: jwt.verify, signedJwt: ${signedJwt}, publickey: ${credentials[0].publicKey}`, error.stack);

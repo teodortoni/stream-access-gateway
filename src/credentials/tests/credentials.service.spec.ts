@@ -3,6 +3,7 @@ import { CredentialsRepository } from "../credentials.repository";
 import { CredentialDataDto } from "../dto/credential-data.dto";
 import { CredentialsService } from "../credentials.service";
 import { EntityManager } from "typeorm";
+import { ConfigService } from "@nestjs/config";
 
 describe('Credentials Service', () => { 
     let credentialsRepository, credentialsService;
@@ -29,6 +30,7 @@ describe('Credentials Service', () => {
                 CredentialsRepository,
                 CredentialsService,
                 EntityManager,
+                ConfigService,
             ]
         }).compile();
 

@@ -1,11 +1,8 @@
 import { Controller, Body, Post, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import * as config from 'config';
 import { ReplicatePartnerJwtDto } from './dto/replicate-partner-jwt.dto';
 
-const versionTag = config.get('api.version');
-
-@Controller(versionTag)
+@Controller('v1')
 export class AuthController {
     constructor(
         private authService: AuthService,

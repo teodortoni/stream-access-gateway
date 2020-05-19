@@ -1,4 +1,4 @@
-import { typeOrmConfig } from '../src/config/typeorm.config';
+import { typeOrmConfig } from '../config/typeorm.config';
 import * as fs from 'fs';
 
 fs.writeFileSync('ormconfig.json', JSON.stringify(typeOrmConfig, null, 2));

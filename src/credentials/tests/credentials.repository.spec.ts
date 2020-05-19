@@ -3,9 +3,10 @@ import { Test } from "@nestjs/testing";
 import { CredentialsRepository } from "../credentials.repository";
 import { EntityManager } from "typeorm";
 import { InternalServerErrorException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 describe('Credentials Repository', () => {
-    let credentialsRepository, save;
+    let credentialsRepository, save, configService;
 
     const credentialDataDto: CredentialDataDto = {
         clientId: 'testClientUuid',
@@ -17,11 +18,13 @@ describe('Credentials Repository', () => {
         const module = await Test.createTestingModule({
             providers: [
                 CredentialsRepository,
-                EntityManager
+                EntityManager,
+                ConfigService
             ]
         }).compile();
 
         credentialsRepository = await module.get<CredentialsRepository>(CredentialsRepository);
+        configService = await module.get<ConfigService>(ConfigService);
 
         save = jest.fn();
         credentialsRepository.manager.create = jest.fn().mockReturnValue({ save });
@@ -84,6 +87,7 @@ describe('Credentials Repository', () => {
 
     describe('generateHmacSignature', () => {
         it('Hmac signature is generated successfully', async () => {
+            configService.get = jest.fn().mockReturnValue("sha256");
             const result = await credentialsRepository.generateHmacSignature('testClientSecret');
             expect(result).not.toBe('');
         });

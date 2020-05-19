@@ -1,7 +1,4 @@
 import { Controller } from '@nestjs/common';
-import * as config from "config";
 
-const versionTag = config.get('api.version');
-
-@Controller(`${versionTag}/scopes`)
+@Controller('v1/scopes')
 export class ScopesController {}

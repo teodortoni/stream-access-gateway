@@ -1,11 +1,8 @@
 import { Controller, Post, ValidationPipe, Body, Get } from '@nestjs/common';
-import * as config from "config";
 import { ApplicationScopesDto } from './dto/application-scopes.dto';
 import { ApplicationsService } from './applications.service';
 
-const versionTag = config.get('api.version');
-
-@Controller(`${versionTag}/applications`)
+@Controller('v1/applications')
 export class ApplicationsController {
     constructor(private applicationService: ApplicationsService) { }
 
