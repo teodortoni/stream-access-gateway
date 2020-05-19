@@ -16,7 +16,7 @@ export class ApplicationsController {
     }
 
     @Get('/scopes/names')
-    getApplicationScopesNames(@Body() applicationId: string): Promise<any[]> {
+    getApplicationScopesNames(@Body() applicationId: string): Promise<string[]> {
         return this.applicationService.getApplicationScopesNames(applicationId);
     }
 

@@ -120,5 +120,22 @@ describe('Applications Repository', () => {
             expect(applicationRepository.manager.query).toHaveBeenCalled();
             expect(result).toMatchObject(['test_scopes_all']);
         });
+
+        it('Get names of scopes returns empty array', async () => {
+            applicationRepository.manager.query = jest.fn().mockResolvedValue(null);
+
+            expect(applicationRepository.manager.query).not.toHaveBeenCalled();
+            const result = await applicationRepository.getApplicationScopesNames('testApplicationUuid');
+            expect(applicationRepository.manager.query).toHaveBeenCalled();
+            expect(result).toEqual([]);
+        });
+
+        it('Get names of scopes fails with InternalServerErrorException', () => {
+            applicationRepository.manager.query = jest.fn().mockRejectedValue(new InternalServerErrorException);
+
+            expect(applicationRepository.manager.query).not.toHaveBeenCalled();
+            expect(applicationRepository.getApplicationScopesNames('testApplicationUuid')).rejects.toThrow(new InternalServerErrorException);
+            expect(applicationRepository.manager.query).toHaveBeenCalled();
+        });
     });
 });

@@ -1,4 +1,4 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository, EntityManager, getManager } from 'typeorm';
 import { Credentials } from '../entities/credentials.entity';
 import { Logger, InternalServerErrorException } from '@nestjs/common';
 import { CredentialDataDto } from './dto/credential-data.dto';
@@ -9,11 +9,15 @@ import * as config from "config";
 export class CredentialsRepository extends Repository<Credentials> {
     private logger = new Logger('CredentialsRepository');
 
+    constructor(public manager: EntityManager = getManager()) {
+        super();
+    }
+
     async createCredentials(credentialDataDto: CredentialDataDto): Promise<Credentials> {
         const { clientId, applicationId, secret } = credentialDataDto;
 
         try {
-            const credentials = new Credentials();
+            const credentials = this.manager.create(Credentials);
             credentials.clientId = clientId;
             credentials.applicationId = applicationId;
             const keyPair = await this.generatePublicPrivateKeyPair(secret);
@@ -21,9 +25,10 @@ export class CredentialsRepository extends Repository<Credentials> {
             credentials.privateKey = keyPair['privateKey'];
             credentials.hmacSignature = await this.generateHmacSignature(secret);
             credentials.active = true;
-            credentials.save();
+            await credentials.save();
             return credentials;
         } catch (error) {
+            this.logger.error(`Method: createCredentials, clientId: ${clientId}, applicationId: ${applicationId}, secret: ${secret} error code: ${error.code}`, error.stack);
             throw new InternalServerErrorException();
         }
     }

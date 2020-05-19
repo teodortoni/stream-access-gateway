@@ -54,7 +54,6 @@ describe('PartnersRepository', () => {
 
     describe('register', () => {
         let save, clientId, applicationId, clientSecret, hash;
-        // let salt, keyPair;
 
         beforeEach(async () => {
             // Mock variables
@@ -64,10 +63,6 @@ describe('PartnersRepository', () => {
 
             save = jest.fn();
             partnersRepository.create = jest.fn().mockReturnValue({ clientId, save });
-
-            // salt = await bcrypt.genSalt();
-            // hash = await bcrypt.hash(mockAuthCredentialsDto.password, salt);
-            // keyPair = { publicKey: 'testpublickey', privateKey: 'testprivatekey' };
 
             // Mock generation of clientId
             uuid.mockReturnValue(clientId);
@@ -109,14 +104,4 @@ describe('PartnersRepository', () => {
             expect(partnersRepository.register(mockAuthCredentialsDto)).rejects.toThrow(new InternalServerErrorException);
         });
     });
-
-    // describe('generatePublicPrivateKeyPair', () => {
-    //     it('Public & Private key pair generated', () => {
-    //         expect(partnersRepository.generatePublicPrivateKeyPair('testsecret')).resolves.not.toThrow(new InternalServerErrorException);
-    //     });
-
-    //     it('Public & Private key pair failed', () => {
-    //         expect(partnersRepository.generatePublicPrivateKeyPair).rejects.toThrow(new InternalServerErrorException);
-    //     });
-    // });
 });

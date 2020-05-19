@@ -82,16 +82,23 @@ export class ApplicationRepository extends Repository<Applications> {
     /**
      * Returns array with names of scopes of an application
      */
-    async getApplicationScopesNames(data: string): Promise<any[]> {
-        const applicationId = typeof data === 'object' ? data['applicationId'] : data;
-        const sqlQuery = `SELECT name FROM scopes 
+    async getApplicationScopesNames(data: string): Promise<string[]> {
+        try {
+            const applicationId = typeof data === 'object' ? data['applicationId'] : data;
+            const sqlQuery = `SELECT name FROM scopes 
             LEFT JOIN applications_scopes_scopes 
             ON scopes.id=applications_scopes_scopes.scopesId
             WHERE applications_scopes_scopes.applicationsId="${applicationId}"`;
-        
-        const result = await this.manager.query(sqlQuery);
-        const scopesNames = result.flatMap(scope => scope.name);
 
-        return scopesNames;
+            const result = await this.manager.query(sqlQuery);
+            if (result) {
+                const scopesNames = result.flatMap(scope => scope.name);
+                return scopesNames;
+            }
+            return [];
+        } catch (error) {
+            this.logger.error(`Method: getApplicationScopesNames, data: ${JSON.stringify(data)}, error:`, error.stack);
+            throw new InternalServerErrorException();
+        }
     }
 }
