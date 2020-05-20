@@ -1,17 +1,34 @@
-import { Controller, Get, Body, ValidationPipe, Post } from '@nestjs/common';
-import { AuthCredentialsDto } from './dto/auth-credentials.dto';
+import { Controller, Body, Post, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { PartnersService } from 'src/partners/partners.service';
+import { ReplicatePartnerJwtDto } from './dto/replicate-partner-jwt.dto';
 
-@Controller('v1/authorization')
+@Controller('v1')
 export class AuthController {
     constructor(
         private authService: AuthService,
-        private partnersService: PartnersService,
     ) { }
 
-    @Post('/signup/partners')
-    partnerSignUp(@Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto) {
-        return this.partnersService.signUp(authCredentialsDto);
+    // Handle Authorization Request With RSA (Public/Private Key Pair)
+    @Post('/authorization')
+    handleAuthorization(@Req() req): Promise<object> {
+        return this.authService.handleAuthorization(req);
+    }
+
+    // Handle Authorization Request With Hmac Signature
+    @Post('/authorization/hmac')
+    handleAuthorizationWithHmac(@Req() req): Promise<object> {
+        return this.authService.handleAuthorizationWithHmac(req);
+    }
+
+    // Replicate Partner Authorization JWT With RSA (Public/Private Key Pair) (for testing purposes)
+    @Post('/replicate/partner/jwt')
+    replicatePartnerAuthorizationJwt(@Body() data: ReplicatePartnerJwtDto): Promise<{ accessToken: string }> {
+        return this.authService.replicatePartnerAuthorizationJwt(data);
+    }
+
+    // Replicate Partner Authorization JWT With Hmac Signature (for testing purposes)
+    @Post('/replicate/partner/jwt/hmac')
+    replicatePartnerAuthorizationJwtWithHmac(@Body() data: ReplicatePartnerJwtDto): Promise<{ accessToken: string }> {
+        return this.authService.replicatePartnerAuthorizationJwtWithHmac(data);
     }
 }

@@ -1,30 +1,43 @@
 import { Test } from "@nestjs/testing";
 import { PartnersRepository } from "../partners.repository";
 import { v4 as uuid } from "uuid";
-import * as bcrypt from "bcrypt";
+import * as bcrypt from "bcryptjs";
 import { ConflictException, InternalServerErrorException } from "@nestjs/common";
+import { ApplicationsService } from "../../applications/applications.service";
+import { CredentialsService } from "../../credentials/credentials.service";
 
-// Mocks the uuid() methood to generate iss (client_id)
+// Mocks the uuid() methood to generate clientId
 jest.mock('uuid');
 
 describe('PartnersRepository', () => {
-    let partnersRepository;
-    let salt;
+    let partnersRepository, applicationsService, credentialsService, salt;
 
     const mockAuthCredentialsDto = {
-        name: 'testName',
-        username: 'testUsername',
-        password: 'Th1s1sat3stpwd',
+        clientName: 'testClientName',
+        clientApplicationName: 'testApplicationName',
+        scopes: 'test_scope_get',
     };
+
+    const mockApplicationsService = () => ({
+        createApplication: jest.fn()
+    });
+
+    const mockCredentialsService = () => ({
+        createCredentials: jest.fn()
+    });
 
     beforeEach(async () => {
         const module = await Test.createTestingModule({
             providers: [
                 PartnersRepository,
+                { provide: ApplicationsService, useFactory: mockApplicationsService },
+                { provide: CredentialsService, useFactory: mockCredentialsService },
             ]
         }).compile();
 
         partnersRepository = await module.get<PartnersRepository>(PartnersRepository);
+        applicationsService = await module.get<ApplicationsService>(ApplicationsService);
+        credentialsService = await module.get<CredentialsService>(CredentialsService);
 
         salt = await bcrypt.genSalt();
     });
@@ -39,68 +52,56 @@ describe('PartnersRepository', () => {
         });
     });
 
-    describe('signUp', () => {
-        let save;
-        let clientId;
-        let salt;
-        let hash;
-        let keyPair;
+    describe('register', () => {
+        let save, clientId, applicationId, clientSecret, hash;
 
         beforeEach(async () => {
-            save = jest.fn();
-            partnersRepository.create = jest.fn().mockReturnValue({ save });
-
             // Mock variables
-            clientId = 'testuuid';
-            salt = await bcrypt.genSalt();
-            hash = await bcrypt.hash(mockAuthCredentialsDto.password, salt);
-            keyPair = { publicKey: 'testpublickey', privateKey: 'testprivatekey' };
+            clientId = 'testClientUuid';
+            applicationId = 'testApplicationUuid';
+            clientSecret = 'testClientSecret';
 
-            // Mock uuid. Generation of iss
+            save = jest.fn();
+            partnersRepository.create = jest.fn().mockReturnValue({ clientId, save });
+
+            // Mock generation of clientId
             uuid.mockReturnValue(clientId);
-
+            
             // Mock hashedPassword
             partnersRepository.hashedPassword = jest.fn().mockResolvedValue(hash);
-
-            // Mock generatePublicPrivateKeyPair
-            partnersRepository.generatePublicPrivateKeyPair = jest.fn().mockResolvedValue(keyPair);
         });
 
-        it('Partner sign up was successful', async () => {
+        it('Partner and application with scopes was successful', async () => {
             // Mock partners entity save method
             save.mockResolvedValue(true);
 
-            expect(partnersRepository.hashedPassword).not.toHaveBeenCalled();
-            expect(partnersRepository.generatePublicPrivateKeyPair).not.toHaveBeenCalled();
-            const result = await partnersRepository.signUp(mockAuthCredentialsDto);
-            expect(partnersRepository.hashedPassword).toHaveBeenCalled();
-            expect(partnersRepository.generatePublicPrivateKeyPair).toHaveBeenCalled();
+            // Mock createApplication method of applicationsService
+            applicationsService.createApplication.mockResolvedValue({ id: applicationId });
+
+            // Mock createCredentials method of credentialsService
+            credentialsService.createCredentials.mockResolvedValue({ privateKey: clientSecret });
+
+            expect(applicationsService.createApplication).not.toHaveBeenCalled();
+            expect(credentialsService.createCredentials).not.toHaveBeenCalled();
+            const result = await partnersRepository.register(mockAuthCredentialsDto, applicationsService, credentialsService);
+            expect(applicationsService.createApplication).toHaveBeenCalled();
+            expect(credentialsService.createCredentials).toHaveBeenCalled();
             expect(result).toMatchObject({
-                'client_id': clientId,
-                'public_key': keyPair.publicKey,
-                'private_key': keyPair.privateKey
+                clientId,
+                applicationId,
+                clientSecret
             });
         });
 
-        it('Partner sign up failed because of username conflict', () => {
+        it('Partner and application with scopes failed because of partner name conflict', () => {
             // Mock partners entity save method
-            save.mockRejectedValue({ code: '23505' });
-            expect(partnersRepository.signUp(mockAuthCredentialsDto)).rejects.toThrow(new ConflictException('Username entered is already taken.'));
+            save.mockRejectedValue({ code: 'ER_DUP_ENTRY' });
+            expect(partnersRepository.register(mockAuthCredentialsDto)).rejects.toThrow(new ConflictException('Partner name entered is already taken.'));
         });
 
-        it('Partner sign up failed with InternalServerErrorException', () => {
-            save.mockRejectedValue(InternalServerErrorException);
-            expect(partnersRepository.signUp(mockAuthCredentialsDto)).rejects.toThrow(new InternalServerErrorException);
-        });
-    });
-
-    describe('generatePublicPrivateKeyPair', () => {
-        it('Public & Private key pair generated', () => {
-            expect(partnersRepository.generatePublicPrivateKeyPair('testsecret')).resolves.not.toThrow(new InternalServerErrorException);
-        });
-
-        it('Public & Private key pair failed', () => {
-            expect(partnersRepository.generatePublicPrivateKeyPair).rejects.toThrow(new InternalServerErrorException);
+        it('Partner and application with scopes failed with InternalServerErrorException', () => {
+            save.mockRejectedValue({ code: 'any' });
+            expect(partnersRepository.register(mockAuthCredentialsDto)).rejects.toThrow(new InternalServerErrorException);
         });
     });
 });

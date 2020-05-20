@@ -1,64 +1,65 @@
 import { Repository, EntityRepository } from "typeorm";
-import { Partners } from "./partners.entity";
-import { AuthCredentialsDto } from "src/auth/dto/auth-credentials.dto";
-import * as bcrypt from "bcrypt";
+import * as bcrypt from "bcryptjs";
 import { InternalServerErrorException, Logger, ConflictException } from "@nestjs/common";
-import { v4 as uuid } from "uuid";
-import * as crypto from "crypto";
+import { PartnerApplicationRegisterData } from "./dto/partner-application-register.data.dto";
+import { Partners } from "../entities/partners.entity";
+import { ApplicationDataDto } from "src/applications/dto/application-data.dto";
+import { ApplicationsService } from "../applications/applications.service";
+import { CredentialsService } from "src/credentials/credentials.service";
+import { CredentialDataDto } from "src/credentials/dto/credential-data.dto";
 
 @EntityRepository(Partners)
 export class PartnersRepository extends Repository<Partners> {
     private logger = new Logger('PartnersRepository');
 
-    async signUp(authCredentialsDto: AuthCredentialsDto): Promise<object> {
-        const { name, username, password } = authCredentialsDto;
+    async register(
+        registerData: PartnerApplicationRegisterData,
+        applicationsService: ApplicationsService,
+        credentialsService: CredentialsService
+    ): Promise<object> {
+        const { clientName, clientApplicationName, scopes } = registerData;
 
+        let partner;
         try {
-            const partner = this.create();
-            partner.iss = uuid();
-            partner.name = name;
-            partner.username = username;
-            partner.salt = await bcrypt.genSalt();
-            partner.password = await this.hashedPassword(password, partner.salt);
-            const keyPair = await this.generatePublicPrivateKeyPair(partner.salt);
-            partner.publickey = keyPair['publicKey'];
-            partner.privatekey = keyPair['privateKey'];
-            partner.active = false;
-        
+            partner = this.create();
+            partner.name = clientName;
+            partner.secret = await bcrypt.genSalt();
+            partner.revokedAt = false;
             await partner.save();
-
-            return {
-                "client_id": partner.iss,
-                "public_key": partner.publickey,
-                "private_key": partner.privatekey
-            };
         } catch (error) {
-            this.logger.debug(`Method: signUp, data: ${JSON.stringify(authCredentialsDto)}, error code: ${error.code}`, error.stack);
-            throw error.code === '23505' ? new ConflictException('Username entered is already taken.') : new InternalServerErrorException();
+            this.logger.error(`Method: register, data: ${JSON.stringify(registerData)}, error code: ${error.code}`, error.stack);
+            throw error.code === 'ER_DUP_ENTRY' ? new ConflictException('Partner name entered is already taken.') : new InternalServerErrorException();
         }
+
+        const applicationData: ApplicationDataDto = {
+            name: clientApplicationName,
+            clientId: partner.clientId,
+            scopes
+        };
+
+        // Create application
+        const application = await applicationsService.createApplication(applicationData);
+        
+        // Create application credentials
+        let credentials;
+        if (application) {
+            const credentialData: CredentialDataDto = {
+                clientId: partner.clientId,
+                applicationId: application.id,
+                secret: partner.secret
+            };
+
+            credentials = await credentialsService.createCredentials(credentialData);
+        }
+
+        return {
+            clientId: partner.clientId,
+            applicationId: application.id,
+            clientSecret: credentials.privateKey // potentially private key or hmac signature
+        };
     }
 
     private async hashedPassword(password: string, salt: string): Promise<string> {
         return bcrypt.hash(password, salt);
-    }
-
-    private async generatePublicPrivateKeyPair(secret: string): Promise<object> {
-        try {
-            return crypto.generateKeyPairSync('rsa', {
-                modulusLength: 4096,
-                publicKeyEncoding: {
-                    type: 'spki',
-                    format: 'pem'
-                },
-                privateKeyEncoding: {
-                    type: 'pkcs8',
-                    format: 'pem',
-                    cipher: 'aes-256-cbc',
-                    passphrase: secret
-                }
-            });
-        } catch (error) {
-            throw new InternalServerErrorException();
-        }
     }
 }
