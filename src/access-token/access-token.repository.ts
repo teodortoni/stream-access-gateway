@@ -3,11 +3,13 @@ import { AccessTokens } from "src/entities/access-tokens.entity";
 import { AccessTokenDataDto } from "./dto/access-token.data.dto";
 import { InternalServerErrorException, Logger } from "@nestjs/common";
 import * as jwt from "jsonwebtoken";
-import * as config from "config";
+import { ConfigService } from "@nestjs/config";
 
 @EntityRepository(AccessTokens)
 export class AccessTokenRepository extends Repository<AccessTokens> {
     private logger = new Logger('AccessTokenRepository');
+
+    constructor(private configService: ConfigService) { super();}
 
     async createAccessToken(accessTokenDataDto: AccessTokenDataDto, privateKey: string): Promise<AccessTokens> {
         const { clientId, applicationId, credentialsId, exp } = accessTokenDataDto;
@@ -19,7 +21,7 @@ export class AccessTokenRepository extends Repository<AccessTokens> {
             accessToken.credentialsId = credentialsId;
             accessToken.signature = await this.generateSignature(accessTokenDataDto, privateKey)
             accessToken.expiresAt = new Date(exp);
-            accessToken.expiresIn = config.get('app.jwt.expiresIn');
+            accessToken.expiresIn = this.configService.get<number>('app.jwt.expiresIn');
             accessToken.save();
             return accessToken;
         } catch (error) {
