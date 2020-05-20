@@ -1,16 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { AuthCredentialsDto } from 'src/auth/dto/auth-credentials.dto';
 import { PartnersRepository } from './partners.repository';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PartnerApplicationRegisterData } from './dto/partner-application-register.data.dto';
+import { ApplicationsService } from '../applications/applications.service';
+import { CredentialsService } from '../credentials/credentials.service';
 
 @Injectable()
 export class PartnersService {
     constructor(
         @InjectRepository(PartnersRepository)
         private partnersRepository: PartnersRepository,
+        private applicationsService: ApplicationsService,
+        private credentialsService: CredentialsService,
     ) { }
 
-    signUp(authCredentialsDto: AuthCredentialsDto) {
-        return this.partnersRepository.signUp(authCredentialsDto);
+    register(registerData: PartnerApplicationRegisterData) {
+        return this.partnersRepository.register(registerData, this.applicationsService, this.credentialsService);
     }
 }

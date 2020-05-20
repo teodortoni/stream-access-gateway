@@ -2,6 +2,10 @@ import { Test } from "@nestjs/testing";
 import { PartnersService } from "../partners.service";
 import { PartnersRepository } from "../partners.repository";
 import { v4 as uuid } from "uuid";
+import { ApplicationsService } from "../../applications/applications.service";
+import { CredentialsService } from "../../credentials/credentials.service";
+import { ApplicationRepository } from "../../applications/application.repository";
+import { CredentialsRepository } from "../../credentials/credentials.repository";
 
 describe('PartnerService', () => { 
     let partnersService;
@@ -14,14 +18,22 @@ describe('PartnerService', () => {
     };
 
     const mockPartnersRepository = () => ({
-        signUp: jest.fn(),
+        register: jest.fn(),
     });
+
+    const mockApplicationRepository = () => ({});
+
+    const mockCredentialsRepository = () => ({});
 
     beforeEach(async () => { 
         const module = await Test.createTestingModule({
             providers: [
                 PartnersService,
                 { provide: PartnersRepository, useFactory: mockPartnersRepository },
+                ApplicationsService,
+                { provide: ApplicationRepository, useFactory: mockApplicationRepository },
+                CredentialsService,
+                { provide: CredentialsRepository, useFactory: mockCredentialsRepository },
             ]
         }).compile();
 
@@ -29,16 +41,23 @@ describe('PartnerService', () => {
         partnersRepository = await module.get<PartnersRepository>(PartnersRepository);
     });
 
-    describe('signUp', () => { 
-        it('Username and password received successfully', async () => { 
-            const mockIss = uuid();
+    describe('register', () => { 
+        it('Partner and Application registration with Scopes', async () => { 
+            const clientId = uuid();
+            const applciationId = uuid();
+            const clientSecret = '"-----BEGIN ENCRYPTED PRIVATE KEY-----\n"';
+            const mockRegisterResults = {
+                clientId,
+                applciationId,
+                clientSecret
+            };
             
-            // Mock partners.repository signUp
-            partnersRepository.signUp.mockResolvedValue(mockIss);
+            // Mock partners.repository register
+            partnersRepository.register.mockResolvedValue(mockRegisterResults);
 
-            const result = await partnersService.signUp(mockAuthCredentialsDto);
+            const result = await partnersService.register(mockAuthCredentialsDto);
 
-            expect(result).toEqual(mockIss);
+            expect(result).toEqual({clientId, applciationId, clientSecret});
         });
     });
 });
