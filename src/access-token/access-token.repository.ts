@@ -1,5 +1,5 @@
 import { Repository, EntityRepository } from "typeorm";
-import { AccessTokens } from "src/entities/access-tokens.entity";
+import { AccessTokens } from "../entities/access-tokens.entity";
 import { AccessTokenDataDto } from "./dto/access-token.data.dto";
 import { InternalServerErrorException, Logger } from "@nestjs/common";
 import * as jwt from "jsonwebtoken";
