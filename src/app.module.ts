@@ -7,6 +7,7 @@ import { typeOrmConfig } from '../config/typeorm.config';
 import { ApplicationsModule } from './applications/applications.module';
 import { CredentialsModule } from './credentials/credentials.module';
 import { ScopesModule } from './scopes/scopes.module';
+import { AccessTokenModule } from './access-token/access-token.module';
 import defaultconfigs from '../config/defaultconfigs';
 
 @Module({
