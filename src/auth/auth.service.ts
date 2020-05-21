@@ -7,6 +7,8 @@ import * as jwt from "jsonwebtoken";
 import { Connection } from "typeorm";
 import { ReplicatePartnerJwtDto } from "./dto/replicate-partner-jwt.dto";
 import { ApplicationRepository } from "src/applications/application.repository";
+import { AccessTokenService } from "src/access-token/access-token.service";
+import { AccessTokenDataDto } from "src/access-token/dto/access-token.data.dto";
 import { ConfigService } from "@nestjs/config";
 
 @Injectable()
@@ -76,17 +78,17 @@ export class AuthService {
                 clientId: verified['clientId'],
                 applicationId: verified['applicationId'],
                 credentialsId: credentials[0].id,
+                privateKey: credentials[0].privateKey,
                 iat: verified['iat'],
                 exp: verified['exp']
             };
-
-            const accessToken = await this.accessTokenService.createAccessToken(accessTokenData, credentials[0].privateKey);
+            const accessToken = await this.accessTokenService.createAccessToken(accessTokenData, verified['scopes']);
 
             // Return access token
             return {
                 "access_token": accessToken.signature,
                 "token_type": "Bearer",
-                "expires_in": this.configService.get<string>('app.jwt.expiresIn')
+                "expires_in": accessToken.expiresIn
             };
         } catch (error) {
             this.logger.error(`Method: jwt.verify, signedJwt: ${signedJwt}, publickey: ${credentials[0].publicKey}`, error.stack);
@@ -131,24 +133,23 @@ export class AuthService {
             };
             const verified = await jwt.verify(signedJwt, credentials[0].hmacSignature, options);
             this.logger.log(`Partner with clientId (${verified['clientId']}) has made a request for authorization. JWT verified successfully.`);
-
             // Create access token
             const accessTokenData: AccessTokenDataDto = {
                 clientId: verified['clientId'],
                 applicationId: verified['applicationId'],
                 credentialsId: credentials[0].id,
+                privateKey: credentials[0].hmacSignature,
                 iat: verified['iat'],
                 exp: verified['exp']
             };
 
-
-            const accessToken = await this.accessTokenService.createAccessToken(accessTokenData, credentials[0].hmacSignature);
+            const accessToken = await this.accessTokenService.createAccessToken(accessTokenData, verified['scopes']);
 
             // Return access token
             return {
                 "access_token": accessToken.signature,
                 "token_type": "Bearer",
-                "expires_in": this.configService.get<string>('app.jwt.expiresIn')
+                "expires_in": accessToken.expiresIn
             };
         } catch (error) {
             this.logger.error(`Method: jwt.verify, signedJwt: ${signedJwt}, publickey: ${credentials[0].publicKey}`, error.stack);
