@@ -39,4 +39,7 @@ lerna-debug.log*
 # TypeORM 
 ormconfig.json
 
+# Serverless directories
+.serverless
+
 notes.js
