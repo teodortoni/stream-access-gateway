@@ -3,6 +3,7 @@ import { Test } from "@nestjs/testing";
 import { AccessTokenRepository } from "../access-token.repository";
 import { EntityManager } from "typeorm";
 import { ConfigService } from "@nestjs/config";
+import { InternalServerErrorException } from "@nestjs/common";
 
 describe('Access Token Repository', () => {
   let accessTokenRepository, save, configService;
@@ -55,14 +56,20 @@ describe('Access Token Repository', () => {
       });
 
     });
+
+    it('Access Token failed with InternalServerErrorException', () => {
+      save.mockRejectedValue({ code: undefined });
+
+      expect(accessTokenRepository.generateSignature).not.toHaveBeenCalled();
+      expect(accessTokenRepository.createAccessToken(accessTokenDataDto)).rejects.toThrow(new InternalServerErrorException);
+      expect(accessTokenRepository.generateSignature).toHaveBeenCalled();
+    })
   });
 
   describe('Create Signature', () => {
     it('Signature created successfully', async () => {
 
       accessTokenRepository.generateSignature = jest.fn().mockReturnValue('testSignature');
-      // save.mockResolvedValue(true);
-
       expect(accessTokenRepository.generateSignature).not.toHaveBeenCalled();
 
       const result = await accessTokenRepository.generateSignature(accessTokenDataDto);
