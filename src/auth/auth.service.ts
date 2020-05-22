@@ -80,9 +80,10 @@ export class AuthService {
                 credentialsId: credentials[0].id,
                 privateKey: credentials[0].privateKey,
                 iat: verified['iat'],
-                exp: verified['exp']
+                exp: verified['exp'],
+                scopes: verified['scopes']
             };
-            const accessToken = await this.accessTokenService.createAccessToken(accessTokenData, verified['scopes']);
+            const accessToken = await this.accessTokenService.createAccessToken(accessTokenData);
 
             // Return access token
             return {
@@ -140,10 +141,11 @@ export class AuthService {
                 credentialsId: credentials[0].id,
                 privateKey: credentials[0].hmacSignature,
                 iat: verified['iat'],
-                exp: verified['exp']
+                exp: verified['exp'],
+                scopes: verified['scopes']
             };
 
-            const accessToken = await this.accessTokenService.createAccessToken(accessTokenData, verified['scopes']);
+            const accessToken = await this.accessTokenService.createAccessToken(accessTokenData);
 
             // Return access token
             return {

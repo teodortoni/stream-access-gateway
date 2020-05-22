@@ -1,24 +1,32 @@
-import { Repository, EntityRepository } from "typeorm";
+import { Repository, EntityRepository, getManager, EntityManager } from "typeorm";
 import { AccessTokens } from "../entities/access-tokens.entity";
 import { AccessTokenDataDto } from "./dto/access-token.data.dto";
 import { InternalServerErrorException, Logger } from "@nestjs/common";
 import * as jwt from "jsonwebtoken";
-import configs from "../../config/defaultconfigs";
+import { ConfigService } from "@nestjs/config";
+
 
 @EntityRepository(AccessTokens)
 export class AccessTokenRepository extends Repository<AccessTokens> {
     private logger = new Logger('AccessTokenRepository');
+    
+    constructor(
+        public manager: EntityManager = getManager(),
+        private configService: ConfigService
+    ) {
+        super();
+    }
 
-    async createAccessToken(accessTokenDataDto: AccessTokenDataDto, scopes: []): Promise<AccessTokens> {
+    async createAccessToken(accessTokenDataDto: AccessTokenDataDto): Promise<AccessTokens> {
         const { clientId, applicationId, credentialsId, exp } = accessTokenDataDto;
         try {
-            const accessToken = new AccessTokens();
+            const accessToken = this.manager.create(AccessTokens);
             accessToken.clientId = clientId;
             accessToken.applicationId = applicationId;
             accessToken.credentialsId = credentialsId;
-            accessToken.signature = await this.generateSignature(accessTokenDataDto, scopes);
+            accessToken.signature = this.generateSignature(accessTokenDataDto);
             accessToken.expiresAt = new Date(exp);
-            accessToken.expiresIn = configs().app.jwt.expiresIn;
+            accessToken.expiresIn = this.configService.get<number>('app.jwt.expiresIn');
             accessToken.save();
             return accessToken;
         } catch (error) {
@@ -26,16 +34,16 @@ export class AccessTokenRepository extends Repository<AccessTokens> {
         }
     }
 
-    private async generateSignature(accessTokenDataDto: AccessTokenDataDto, scopes: []): Promise<string> {
+    private generateSignature(accessTokenDataDto: AccessTokenDataDto):string {
         const jwtPayload = {
             clientId: accessTokenDataDto.clientId,
             applicationId: accessTokenDataDto.applicationId,
             credentialsId: accessTokenDataDto.credentialsId,
-            scopes: scopes,
+            scopes: accessTokenDataDto.scopes,
             iat: accessTokenDataDto.iat,
             exp: accessTokenDataDto.exp
         };
-        const accessToken = await jwt.sign(jwtPayload, accessTokenDataDto.privateKey);
-        return accessToken;
+        const signature = jwt.sign(jwtPayload, accessTokenDataDto.privateKey);
+        return signature;
     }
 }

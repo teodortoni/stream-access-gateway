@@ -11,7 +11,7 @@ export class AccessTokenService {
         private repository: AccessTokenRepository
     ) {}
 
-    createAccessToken(accessTokenDataDto: AccessTokenDataDto, scopes: []): Promise<AccessTokens> {
-        return this.repository.createAccessToken(accessTokenDataDto ,scopes);
+    createAccessToken(accessTokenDataDto: AccessTokenDataDto): Promise<AccessTokens> {
+        return this.repository.createAccessToken(accessTokenDataDto);
     }
 }

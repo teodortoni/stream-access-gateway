@@ -5,4 +5,5 @@ export class AccessTokenDataDto {
     privateKey: string;
     iat: number;
     exp: number;
+    scopes: string;
 }
