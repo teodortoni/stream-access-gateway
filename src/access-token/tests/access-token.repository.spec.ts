@@ -68,13 +68,8 @@ describe('Access Token Repository', () => {
 
   describe('Create Signature', () => {
     it('Signature created successfully', async () => {
-
-      accessTokenRepository.generateSignature = jest.fn().mockReturnValue('testSignature');
-      expect(accessTokenRepository.generateSignature).not.toHaveBeenCalled();
-
       const result = await accessTokenRepository.generateSignature(accessTokenDataDto);
-      expect(accessTokenRepository.generateSignature).toHaveBeenCalled();
-      expect(result).toMatch('testSignature');
+      expect(result).not.toBeNull();
     });
   }); 
 });

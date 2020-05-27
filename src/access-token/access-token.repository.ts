@@ -27,9 +27,10 @@ export class AccessTokenRepository extends Repository<AccessTokens> {
             accessToken.signature = this.generateSignature(accessTokenDataDto);
             accessToken.expiresAt = new Date(exp);
             accessToken.expiresIn = this.configService.get<number>('app.jwt.expiresIn');
-            accessToken.save();
+            await accessToken.save();
             return accessToken;
         } catch (error) {
+            this.logger.debug(`Method: createAccessToken, data: ${JSON.stringify(accessTokenDataDto)}, error code: ${error.code}`, error.stack);
             throw new InternalServerErrorException();
         }
     }
