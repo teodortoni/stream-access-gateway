@@ -7,6 +7,8 @@ import { ApplicationDataDto } from "src/applications/dto/application-data.dto";
 import { ApplicationsService } from "../applications/applications.service";
 import { CredentialsService } from "src/credentials/credentials.service";
 import { CredentialDataDto } from "src/credentials/dto/credential-data.dto";
+import { EncryptionKeypairService } from "src/encryptionkeypair/encryptionkeypair.service";
+import { CreateKeypairDataDto } from "src/encryptionkeypair/dto/create-keypair-data.dto";
 
 @EntityRepository(Partners)
 export class PartnersRepository extends Repository<Partners> {
@@ -15,7 +17,8 @@ export class PartnersRepository extends Repository<Partners> {
     async register(
         registerData: PartnerApplicationRegisterData,
         applicationsService: ApplicationsService,
-        credentialsService: CredentialsService
+        credentialsService: CredentialsService,
+        encryptionKeypairService: EncryptionKeypairService
     ): Promise<object> {
         const { clientName, clientApplicationName, scopes } = registerData;
 
@@ -30,6 +33,14 @@ export class PartnersRepository extends Repository<Partners> {
             this.logger.error(`Method: register, data: ${JSON.stringify(registerData)}, error code: ${error.code}`, error.stack);
             throw error.code === 'ER_DUP_ENTRY' ? new ConflictException('Partner name entered is already taken.') : new InternalServerErrorException();
         }
+
+        const createKeypairDataDto: CreateKeypairDataDto = {
+            clientId: partner.clientId,
+            secret: partner.secret
+        }
+        
+        // Create partner encryption key pair
+        const encryptionKeypair = await encryptionKeypairService.createKeypair(createKeypairDataDto);
 
         const applicationData: ApplicationDataDto = {
             name: clientApplicationName,
@@ -55,7 +66,8 @@ export class PartnersRepository extends Repository<Partners> {
         return {
             clientId: partner.clientId,
             applicationId: application.id,
-            clientSecret: credentials.privateKey // potentially private key or hmac signature
+            clientSecret: credentials.privateKey, // potentially private key or hmac signature
+            encryptionPublicKey: encryptionKeypair.publicKey
         };
     }
 

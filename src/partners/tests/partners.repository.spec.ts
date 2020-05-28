@@ -5,12 +5,13 @@ import * as bcrypt from "bcryptjs";
 import { ConflictException, InternalServerErrorException } from "@nestjs/common";
 import { ApplicationsService } from "../../applications/applications.service";
 import { CredentialsService } from "../../credentials/credentials.service";
+import { EncryptionKeypairService } from "../../encryptionkeypair/encryptionkeypair.service";
 
 // Mocks the uuid() methood to generate clientId
 jest.mock('uuid');
 
 describe('PartnersRepository', () => {
-    let partnersRepository, applicationsService, credentialsService, salt;
+    let partnersRepository, applicationsService, credentialsService, encryptionKeypairService, salt;
 
     const mockAuthCredentialsDto = {
         clientName: 'testClientName',
@@ -26,18 +27,24 @@ describe('PartnersRepository', () => {
         createCredentials: jest.fn()
     });
 
+    const mockEncryptionKeypairService = () => ({
+        createKeypair: jest.fn()
+    });
+
     beforeEach(async () => {
         const module = await Test.createTestingModule({
             providers: [
                 PartnersRepository,
                 { provide: ApplicationsService, useFactory: mockApplicationsService },
                 { provide: CredentialsService, useFactory: mockCredentialsService },
+                { provide: EncryptionKeypairService, useFactory: mockEncryptionKeypairService },
             ]
         }).compile();
 
         partnersRepository = await module.get<PartnersRepository>(PartnersRepository);
         applicationsService = await module.get<ApplicationsService>(ApplicationsService);
         credentialsService = await module.get<CredentialsService>(CredentialsService);
+        encryptionKeypairService = await module.get<EncryptionKeypairService>(EncryptionKeypairService);
 
         salt = await bcrypt.genSalt();
     });
@@ -53,13 +60,14 @@ describe('PartnersRepository', () => {
     });
 
     describe('register', () => {
-        let save, clientId, applicationId, clientSecret, hash;
+        let save, clientId, applicationId, clientSecret, encryptionPublicKey, hash;
 
         beforeEach(async () => {
             // Mock variables
             clientId = 'testClientUuid';
             applicationId = 'testApplicationUuid';
             clientSecret = 'testClientSecret';
+            encryptionPublicKey = 'testEncryptionPublicKey';
 
             save = jest.fn();
             partnersRepository.create = jest.fn().mockReturnValue({ clientId, save });
@@ -81,15 +89,26 @@ describe('PartnersRepository', () => {
             // Mock createCredentials method of credentialsService
             credentialsService.createCredentials.mockResolvedValue({ privateKey: clientSecret });
 
+            // Mock createKeypair method of encryptionKeypairService
+            encryptionKeypairService.createKeypair.mockResolvedValue({ publicKey: encryptionPublicKey });
+
             expect(applicationsService.createApplication).not.toHaveBeenCalled();
             expect(credentialsService.createCredentials).not.toHaveBeenCalled();
-            const result = await partnersRepository.register(mockAuthCredentialsDto, applicationsService, credentialsService);
+            expect(encryptionKeypairService.createKeypair).not.toHaveBeenCalled();
+            const result = await partnersRepository.register(
+                mockAuthCredentialsDto,
+                applicationsService,
+                credentialsService,
+                encryptionKeypairService
+            );
             expect(applicationsService.createApplication).toHaveBeenCalled();
             expect(credentialsService.createCredentials).toHaveBeenCalled();
+            expect(encryptionKeypairService.createKeypair).toHaveBeenCalled();
             expect(result).toMatchObject({
                 clientId,
                 applicationId,
-                clientSecret
+                clientSecret,
+                encryptionPublicKey
             });
         });
 

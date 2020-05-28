@@ -17,6 +17,7 @@ import { AccessTokenService } from 'src/access-token/access-token.service';
 import { AccessTokenRepository } from 'src/access-token/access-token.repository';
 import configs from 'config/defaultconfigs';
 import * as jwt from 'jsonwebtoken';
+import { EncryptionKeypairModule } from 'src/encryptionkeypair/encryptionkeypair.module';
 
 const expiresIn = configs().app.jwt.expiresIn;
 const algorithm: jwt.Algorithm = configs().app.jwt.algorithm as jwt.Algorithm;
@@ -58,6 +59,7 @@ const algorithm: jwt.Algorithm = configs().app.jwt.algorithm as jwt.Algorithm;
     TypeOrmModule.forFeature([PartnersRepository, CredentialsRepository]),
     CredentialsModule,
     ScopesModule,
+    EncryptionKeypairModule,
   ],
   controllers: [AuthController],
   providers: [
