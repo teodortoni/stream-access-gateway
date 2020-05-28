@@ -37,9 +37,6 @@ describe('Credentials Repository', () => {
                 publicKey: 'testPublicKey',
                 privateKey: 'testPrivateKey'
             });
-
-            // Mock generateHmacSignature
-            credentialsRepository.generateHmacSignature = jest.fn().mockResolvedValue('testHmacSignature');
         });
 
         it('Credentials created successfully', async () => { 
@@ -47,16 +44,13 @@ describe('Credentials Repository', () => {
             save.mockResolvedValue(true);
 
             expect(credentialsRepository.generatePublicPrivateKeyPair).not.toHaveBeenCalled();
-            expect(credentialsRepository.generateHmacSignature).not.toHaveBeenCalled();
             const result = await credentialsRepository.createCredentials(credentialDataDto);
             expect(credentialsRepository.generatePublicPrivateKeyPair).toHaveBeenCalled();
-            expect(credentialsRepository.generateHmacSignature).toHaveBeenCalled();
             expect(result).toMatchObject({
                 clientId: 'testClientUuid',
                 applicationId: 'testApplicationUuid',
                 publicKey: 'testPublicKey',
                 privateKey: 'testPrivateKey',
-                hmacSignature: 'testHmacSignature',
                 active: true
             });
         });
@@ -66,10 +60,8 @@ describe('Credentials Repository', () => {
             save.mockRejectedValue({ code: undefined });
 
             expect(credentialsRepository.generatePublicPrivateKeyPair).not.toHaveBeenCalled();
-            expect(credentialsRepository.generateHmacSignature).not.toHaveBeenCalled();
             expect(credentialsRepository.createCredentials(credentialDataDto)).rejects.toThrow(new InternalServerErrorException);
             expect(credentialsRepository.generatePublicPrivateKeyPair).toHaveBeenCalled();
-            // expect(credentialsRepository.generateHmacSignature).toHaveBeenCalled();
         });
     });
 
@@ -82,18 +74,6 @@ describe('Credentials Repository', () => {
 
         it('Public/Private key pair generation failed with InternalServerErrorException', () => {
             expect(credentialsRepository.generatePublicPrivateKeyPair()).rejects.toThrow(new InternalServerErrorException);
-        });
-    });
-
-    describe('generateHmacSignature', () => {
-        it('Hmac signature is generated successfully', async () => {
-            configService.get = jest.fn().mockReturnValue("sha256");
-            const result = await credentialsRepository.generateHmacSignature('testClientSecret');
-            expect(result).not.toBe('');
-        });
-
-        it('Hmac signature generation fails with InternalServerErrorException', () => {
-            expect(credentialsRepository.generateHmacSignature()).rejects.toThrow(new InternalServerErrorException);
         });
     });
 });

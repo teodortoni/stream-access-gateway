@@ -39,7 +39,7 @@ const algorithm: jwt.Algorithm = configs().app.jwt.algorithm as jwt.Algorithm;
             delete tokenOrPayload['passphrase'];
             // In case of a private key with passphrase an object { key, passphrase } can be used (based on crypto documentation), 
             // In this case be sure you pass the algorithm option.
-            return passphrase === 'hmacsignature' ? key : { key, passphrase };
+            return { key, passphrase };
           case JwtSecretRequestType.VERIFY:
             // retrieve verify key dynamically
             return null;

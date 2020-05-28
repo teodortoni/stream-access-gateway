@@ -17,9 +17,6 @@ export class Credentials extends BaseEntity {
     @Column({ "type": "text" })
     privateKey: string;
 
-    @Column({ "type": "text" })
-    hmacSignature: string;
-
     @Column({ "type": "boolean" })
     active: boolean;
 

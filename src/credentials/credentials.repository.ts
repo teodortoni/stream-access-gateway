@@ -26,7 +26,6 @@ export class CredentialsRepository extends Repository<Credentials> {
             const keyPair = await this.generatePublicPrivateKeyPair(secret);
             credentials.publicKey = keyPair['publicKey'];
             credentials.privateKey = keyPair['privateKey'];
-            credentials.hmacSignature = await this.generateHmacSignature(secret);
             credentials.active = true;
             await credentials.save();
             return credentials;
@@ -53,16 +52,6 @@ export class CredentialsRepository extends Repository<Credentials> {
             });
         } catch (error) {
             this.logger.debug(`Method: generatePublicPrivateKeyPair, secret: ${secret}, error code: ${error.code}`, error.stack);
-            throw new InternalServerErrorException();
-        }
-    }
-
-    private async generateHmacSignature(secret: string): Promise<string> {
-        try {
-            const hmac = crypto.createHmac(this.configService.get<string>('app.crypto.hmac.algorithm'), secret);
-            return hmac.digest('hex');
-        } catch (error) {
-            this.logger.debug(`Method: generateHmacSignature, secret: ${secret}, error code: ${error.code}`, error.stack);
             throw new InternalServerErrorException();
         }
     }

@@ -66,7 +66,7 @@ export class PartnersRepository extends Repository<Partners> {
         return {
             clientId: partner.clientId,
             applicationId: application.id,
-            clientSecret: credentials.privateKey, // potentially private key or hmac signature
+            clientSecret: credentials.privateKey,
             encryptionPublicKey: encryptionKeypair.publicKey
         };
     }
