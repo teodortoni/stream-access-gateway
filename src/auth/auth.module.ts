@@ -17,6 +17,7 @@ import { AccessTokenService } from 'src/access-token/access-token.service';
 import { AccessTokenRepository } from 'src/access-token/access-token.repository';
 import configs from 'config/defaultconfigs';
 import * as jwt from 'jsonwebtoken';
+import { EncryptionKeypairModule } from 'src/encryptionkeypair/encryptionkeypair.module';
 
 const expiresIn = configs().app.jwt.expiresIn;
 const algorithm: jwt.Algorithm = configs().app.jwt.algorithm as jwt.Algorithm;
@@ -38,7 +39,7 @@ const algorithm: jwt.Algorithm = configs().app.jwt.algorithm as jwt.Algorithm;
             delete tokenOrPayload['passphrase'];
             // In case of a private key with passphrase an object { key, passphrase } can be used (based on crypto documentation), 
             // In this case be sure you pass the algorithm option.
-            return passphrase === 'hmacsignature' ? key : { key, passphrase };
+            return { key, passphrase };
           case JwtSecretRequestType.VERIFY:
             // retrieve verify key dynamically
             return null;
@@ -58,6 +59,7 @@ const algorithm: jwt.Algorithm = configs().app.jwt.algorithm as jwt.Algorithm;
     TypeOrmModule.forFeature([PartnersRepository, CredentialsRepository]),
     CredentialsModule,
     ScopesModule,
+    EncryptionKeypairModule,
   ],
   controllers: [AuthController],
   providers: [
