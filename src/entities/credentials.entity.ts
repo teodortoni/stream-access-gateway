@@ -1,9 +1,6 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Unique } from "typeorm";
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
-// @Unique(["publicKey"])
-// @Unique(["privateKey"])
-// @Unique(["hmacSignature"])
 export class Credentials extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
@@ -19,9 +16,6 @@ export class Credentials extends BaseEntity {
 
     @Column({ "type": "text" })
     privateKey: string;
-
-    @Column({ "type": "text" })
-    hmacSignature: string;
 
     @Column({ "type": "boolean" })
     active: boolean;

@@ -20,7 +20,6 @@ describe('Credentials Service', () => {
         applicationId: credentialDataDto.applicationId,
         publicKey: 'testPublicKey',
         privateKey: 'testPrivateKey',
-        hmacSignature: 'testHmacSignature',
         active: true
     };
 

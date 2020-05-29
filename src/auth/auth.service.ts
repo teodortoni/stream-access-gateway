@@ -97,68 +97,6 @@ export class AuthService {
         }
     }
 
-    async handleAuthorizationWithHmac(req): Promise<object> {
-        // Get JWT from Bearer
-        const bearerArray = req.headers.authorization.split('Bearer');
-        const signedJwt = bearerArray[1].trim();
-        const decoded = jwt.decode(signedJwt, {json: true});
-        const { clientId, applicationId, scopes } = decoded;
-        
-        // Validate Partner
-        const partner = await this.partnersRepository.findOne({ clientId });
-        if (!partner) {
-            this.logger.debug(`Method: handleAuthorization, decoded data: ${JSON.stringify(decoded)}`);
-            throw new UnauthorizedException();
-        }
-
-        // Validate Credentials
-        const credentials = await this.credRepo.find({ where: { clientId, applicationId } });
-        if (credentials.length < 1) {
-            this.logger.debug(`Method: handleAuthorization, creedentials not found, decoded data: ${JSON.stringify(decoded)}`);
-            throw new UnauthorizedException();
-        }
-
-        // Validate Scopes
-        const scopeNames = await this.applicationRepo.getApplicationScopesNames(applicationId);
-        scopes.split(',').forEach(inputScope => {
-            if (!scopeNames.includes(inputScope.trim())) {
-                this.logger.debug(`Method: handleAuthorization, scopes do not match, decoded data: ${JSON.stringify(decoded)}, application scopes: ${JSON.stringify(scopeNames)}`);
-                throw new UnauthorizedException();
-            }
-        });
-
-        // Verify JWT
-        try {
-            const options: jwt.VerifyOptions = {
-                algorithms: ['HS256'],
-            };
-            const verified = await jwt.verify(signedJwt, credentials[0].hmacSignature, options);
-            this.logger.log(`Partner with clientId (${verified['clientId']}) has made a request for authorization. JWT verified successfully.`);
-            // Create access token
-            const accessTokenData: AccessTokenDataDto = {
-                clientId: verified['clientId'],
-                applicationId: verified['applicationId'],
-                credentialsId: credentials[0].id,
-                privateKey: credentials[0].hmacSignature,
-                iat: verified['iat'],
-                exp: verified['exp'],
-                scopes: verified['scopes']
-            };
-
-            const accessToken = await this.accessTokenService.createAccessToken(accessTokenData);
-
-            // Return access token
-            return {
-                "access_token": accessToken.signature,
-                "token_type": "Bearer",
-                "expires_in": accessToken.expiresIn
-            };
-        } catch (error) {
-            this.logger.error(`Method: jwt.verify, signedJwt: ${signedJwt}, publickey: ${credentials[0].publicKey}`, error.stack);
-            throw new UnauthorizedException();
-        }
-    }
-
     /* ------------- BELOW THIS LINE FOR TESTING PURPOSES. MUST BE REMOVED IF NOT NEEDED ------------- */
 
     async replicatePartnerAuthorizationJwt(data: ReplicatePartnerJwtDto): Promise<{ accessToken: string }> {
@@ -175,27 +113,6 @@ export class AuthService {
         };
 
         const accessToken = await this.jwtService.sign(jwtPayload);
-
-        return { accessToken };
-    }
-
-    async replicatePartnerAuthorizationJwtWithHmac(data: ReplicatePartnerJwtDto): Promise<{ accessToken: string }> {
-        const { clientId, applicationId, scopes } = data;
-        const credentials = await this.credRepo.find({ where: { clientId, applicationId } });
-
-        const jwtPayload = {
-            clientId: credentials[0].clientId,
-            applicationId: credentials[0].applicationId,
-            scopes,
-            key: credentials[0].hmacSignature,
-            passphrase: "hmacsignature"
-        };
-
-        const signOptions: jwt.SignOptions = {
-            algorithm: 'HS256'
-        };
-
-        const accessToken = await this.jwtService.sign(jwtPayload, signOptions);
 
         return { accessToken };
     }

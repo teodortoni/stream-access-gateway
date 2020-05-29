@@ -6,6 +6,8 @@ import { ApplicationsService } from "../../applications/applications.service";
 import { CredentialsService } from "../../credentials/credentials.service";
 import { ApplicationRepository } from "../../applications/application.repository";
 import { CredentialsRepository } from "../../credentials/credentials.repository";
+import { EncryptionKeypairService } from "../../encryptionkeypair/encryptionkeypair.service";
+import { EncryptionKeypairRepository } from "../../encryptionkeypair/encryptionkeypair.repository";
 
 describe('PartnerService', () => { 
     let partnersService;
@@ -25,6 +27,8 @@ describe('PartnerService', () => {
 
     const mockCredentialsRepository = () => ({});
 
+    const mockEncryptionKeypairRepository = () => ({});
+
     beforeEach(async () => { 
         const module = await Test.createTestingModule({
             providers: [
@@ -34,6 +38,8 @@ describe('PartnerService', () => {
                 { provide: ApplicationRepository, useFactory: mockApplicationRepository },
                 CredentialsService,
                 { provide: CredentialsRepository, useFactory: mockCredentialsRepository },
+                EncryptionKeypairService,
+                { provide: EncryptionKeypairRepository, useFactory: mockEncryptionKeypairRepository },
             ]
         }).compile();
 
