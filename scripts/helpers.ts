@@ -18,7 +18,7 @@ export const generatePublicPrivateKeyPair = async (secret: string): Promise<obje
             }
         });
     } catch (error) {
-        this.logger.debug(`Method: generatePublicPrivateKeyPair, secret: ${secret}, error code: ${error.code}`, error.stack);
+        this.logger.debug(`Method: generatePublicPrivateKeyPair, error code: ${error.code}`, error.stack);
         throw new InternalServerErrorException();
     }
 }
@@ -28,7 +28,7 @@ export const generateHmacSignature = async (secret: string): Promise<string> => 
         const hmac = crypto.createHmac(configs().app.crypto.hmac.algorithm, secret);
         return hmac.digest('hex');
     } catch (error) {
-        this.logger.debug(`Method: generateHmacSignature, secret: ${secret}, error code: ${error.code}`, error.stack);
+        this.logger.debug(`Method: generateHmacSignature, error code: ${error.code}`, error.stack);
         throw new InternalServerErrorException();
     }
 }
