@@ -1,0 +1,59 @@
+service: stream-access-gateway
+
+plugins:
+  - serverless-dotenv-plugin
+  # Enable warmup on all functions (only for production and staging)
+  # - serverless-plugin-warmup
+
+# custom:
+  # Enable warmup on all functions (only for production and staging)
+  # warmup:
+  #   - production
+  #   - staging
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: ${env:AWS_OWN_REGION, us-east-1}
+  stage: ${env:AWS_OWN_STAGE, dev}
+  vpc:
+    securityGroupIds:
+      - ${env:AWS_OWN_VPC_SECURITY_GROUP}
+    subnetIds:
+      - ${env:AWS_OWN_VPC_SUBNET_1}
+      - ${env:AWS_OWN_VPC_SUBNET_2}
+    #   - subnet-26da1f79
+
+package:
+  exclude:
+    - .git/**
+    - .GitHub/**
+    - config/**
+    - coverage/**
+    - scripts/**
+    - src/**
+    - test/**
+    - .env.example
+    - .eslintrc.js
+    - .gitignore
+    - .GitHub-ci.yml
+    - .prettierrc
+    - nest-cli.json
+    - notes.js
+    - ormconfig.json
+    - tsconfig.build.json
+    - tsconfig.json
+    - README.md
+
+functions:
+  runstream-access-gateway:
+    handler: dist/src/lambda.handler
+    events:
+      - http:
+          path: '/'
+          method: any
+          cors: true
+      - http:
+          path: '{proxy+}'
+          method: any
+          cors: true
