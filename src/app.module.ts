@@ -9,6 +9,7 @@ import { CredentialsModule } from './credentials/credentials.module';
 import { ScopesModule } from './scopes/scopes.module';
 import { AccessTokenModule } from './access-token/access-token.module';
 import { EncryptionKeypairModule } from './encryptionkeypair/encryptionkeypair.module';
+import { ContentmetadataModule } from './contentmetadata/contentmetadata.module';
 import defaultconfigs from '../config/defaultconfigs';
 
 @Module({
@@ -25,6 +26,7 @@ import defaultconfigs from '../config/defaultconfigs';
     ScopesModule,
     AccessTokenModule,
     EncryptionKeypairModule,
+    ContentmetadataModule,
   ],
   providers: [],
 })
