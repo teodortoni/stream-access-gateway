@@ -10,4 +10,14 @@ export class ContentmetadataController {
   getVideoById(@Param('id') id: string): Promise<AxiosResponse<any>> {
     return this.contentmetadataService.getVideoById(id);
   }
+
+  @Get('series/:id')
+  getSeriesById(@Param('id') id: string): Promise<AxiosResponse<any>> {
+    return this.contentmetadataService.getSeriesById(id);
+  }
+
+  @Get('season/:id')
+  getSeasonById(@Param('id') id: string): Promise<AxiosResponse<any>> {
+    return this.contentmetadataService.getSeasonById(id);
+  }
 }
