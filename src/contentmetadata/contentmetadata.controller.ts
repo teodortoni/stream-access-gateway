@@ -1,21 +1,25 @@
-import { Controller, Param, Get } from '@nestjs/common';
+import { Controller, Param, Get, UseGuards } from '@nestjs/common';
 import { ContentmetadataService } from './contentmetadata.service';
 import { AxiosResponse } from 'axios';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('v1/contentmetadata')
 export class ContentmetadataController {
   constructor(private contentmetadataService: ContentmetadataService) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('content/:id')
   getVideoById(@Param('id') id: string): Promise<AxiosResponse<any>> {
     return this.contentmetadataService.getVideoById(id);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('series/:id')
   getSeriesById(@Param('id') id: string): Promise<AxiosResponse<any>> {
     return this.contentmetadataService.getSeriesById(id);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('season/:id')
   getSeasonById(@Param('id') id: string): Promise<AxiosResponse<any>> {
     return this.contentmetadataService.getSeasonById(id);
