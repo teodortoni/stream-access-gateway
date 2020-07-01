@@ -1,37 +1,32 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
-import { AccessTokenRepository } from 'src/access-token/access-token.repository';
 import * as jwt from 'jsonwebtoken';
-import { AccessTokens } from 'src/entities/access-tokens.entity';
 import { AuthService } from './auth.service';
+import { CredentialsRepository } from 'src/credentials/credentials.repository';
+import { Connection } from 'typeorm';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly authService: AuthService,
-    private accessTokenRepository: AccessTokenRepository
+    private credRepo: CredentialsRepository,
+    private readonly connection: Connection,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKeyProvider: async (request, jwtToken, done) => {
-        const options= { 
-          json: true
-        }
-        console.log(request)
-        const decodedToken: any = jwt.decode(jwtToken, options)
-        const { clientId } = decodedToken
-        const accessToken = await this.accessTokenRepository.manager.findOne(AccessTokens, {
-          where: { clientId: clientId }});
-        console.log(accessToken, 'here')
-        done(null, accessToken.signature)
-      }
+        const decodedToken: any = jwt.decode(jwtToken)
+        const { clientId, applicationId } = decodedToken
+        const credentials = await this.credRepo.find({ where: { clientId, applicationId } });
+        done(null, credentials[0].publicKey)
+      },
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     });
+    this.credRepo = this.connection.getCustomRepository(CredentialsRepository);
   }
 
   async validate(payload: any) {
-    console.log(payload)
     return payload;
   }
 }
