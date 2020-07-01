@@ -13,6 +13,7 @@ describe('Access Token Repository', () => {
         applicationId: 'testApplicationUuid',
         credentialsId: 'testCredentialsUuid',
         privateKey: 'testPrivateKey',
+        passphrase: 'testPassphrase',
         iat: 1585249057,
         exp: 1585249657,
         scopes: 'test_scopes_all'

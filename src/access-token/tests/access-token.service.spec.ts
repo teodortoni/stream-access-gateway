@@ -13,6 +13,7 @@ describe('Access Token Service', () => {
         applicationId: 'testApplicationUuid',
         credentialsId: 'testCredentialsUuid',
         privateKey: 'testPrivateKey',
+        passphrase: 'testPassphrase',
         iat: 6000,
         exp: 32000,
         scopes: 'test_scopes_all'
@@ -23,6 +24,7 @@ describe('Access Token Service', () => {
         applicationId: accessTokenDataDto.applicationId,
         credentialsId: accessTokenDataDto.credentialsId,
         privateKey: accessTokenDataDto.privateKey,
+        passphrase: accessTokenDataDto.passphrase,
         iat: accessTokenDataDto.iat,
         exp: accessTokenDataDto.exp,
         scopes: accessTokenDataDto.scopes
