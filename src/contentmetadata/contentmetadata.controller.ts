@@ -3,7 +3,7 @@ import { ContentmetadataService } from './contentmetadata.service';
 import { AxiosResponse } from 'axios';
 import { AuthGuard } from '@nestjs/passport';
 
-@Controller('v1/contentmetadata')
+@Controller('v1')
 export class ContentmetadataController {
     constructor(private contentmetadataService: ContentmetadataService) {}
 
