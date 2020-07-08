@@ -11,6 +11,8 @@ import { AccessTokenModule } from './access-token/access-token.module';
 import { EncryptionKeypairModule } from './encryptionkeypair/encryptionkeypair.module';
 import { ContentmetadataModule } from './contentmetadata/contentmetadata.module';
 import defaultconfigs from '../config/defaultconfigs';
+import { APP_GUARD } from '@nestjs/core';
+import { ScopesGuard } from './scopes/scopes.guard';
 
 @Module({
   imports: [
@@ -28,6 +30,11 @@ import defaultconfigs from '../config/defaultconfigs';
     EncryptionKeypairModule,
     ContentmetadataModule,
   ],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ScopesGuard,
+    }
+  ],
 })
 export class AppModule {}
