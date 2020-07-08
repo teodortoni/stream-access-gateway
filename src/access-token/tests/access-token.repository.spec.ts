@@ -4,6 +4,7 @@ import { AccessTokenRepository } from "../access-token.repository";
 import { EntityManager } from "typeorm";
 import { ConfigService } from "@nestjs/config";
 import { InternalServerErrorException } from "@nestjs/common";
+import { generatePublicPrivateKeyPair } from '../../../scripts/helpers';
 
 describe('Access Token Repository', () => {
     let accessTokenRepository, save, configService;
@@ -30,9 +31,9 @@ describe('Access Token Repository', () => {
 
         accessTokenRepository = await module.get<AccessTokenRepository>(AccessTokenRepository);
         configService = await module.get<ConfigService>(ConfigService);
-
         save = jest.fn();
         accessTokenRepository.manager.create = jest.fn().mockReturnValue({ save });
+        accessTokenRepository.configService.get = jest.fn().mockReturnValue('RS256');
     });
 
     describe('Create Access Token', () => {
@@ -68,8 +69,12 @@ describe('Access Token Repository', () => {
 
     describe('Create Signature', () => {
         it('Signature created successfully', async () => {
-            const result = await accessTokenRepository.generateSignature(accessTokenDataDto);
+            const keyPair = await generatePublicPrivateKeyPair('testPassphrase');
+            accessTokenDataDto.privateKey = keyPair['privateKey'];
+            const result = await accessTokenRepository.generateSignature(
+                accessTokenDataDto
+            );
             expect(result).not.toBeNull();
         });
-    }); 
+    });
 });

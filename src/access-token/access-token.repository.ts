@@ -44,7 +44,7 @@ export class AccessTokenRepository extends Repository<AccessTokens> {
             iat: accessTokenDataDto.iat,
             exp: accessTokenDataDto.exp
         };
- 
+
         const signature = jwt.sign(
             jwtPayload, 
             {
@@ -52,7 +52,7 @@ export class AccessTokenRepository extends Repository<AccessTokens> {
                 passphrase: accessTokenDataDto.passphrase
             }, 
             { 
-                algorithm: this.configService.get<string>('app.jwt.algorithm') as jwt.Algorithm
+                algorithm: this.configService.get<jwt.Algorithm>('app.jwt.algorithm')
             }
         );
         return signature;
