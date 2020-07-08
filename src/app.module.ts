@@ -13,6 +13,7 @@ import { ContentmetadataModule } from './contentmetadata/contentmetadata.module'
 import defaultconfigs from '../config/defaultconfigs';
 import { APP_GUARD } from '@nestjs/core';
 import { ScopesGuard } from './scopes/scopes.guard';
+import { VocabModule } from './vocab/vocab.module';
 
 @Module({
   imports: [
@@ -29,12 +30,13 @@ import { ScopesGuard } from './scopes/scopes.guard';
     AccessTokenModule,
     EncryptionKeypairModule,
     ContentmetadataModule,
+    VocabModule,
   ],
   providers: [
     {
       provide: APP_GUARD,
       useClass: ScopesGuard,
     }
-  ],
+  ]
 })
 export class AppModule {}
