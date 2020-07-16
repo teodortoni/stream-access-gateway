@@ -31,8 +31,7 @@ export class ContentmetadataService {
 
     async getSeriesById(id: string): Promise<any> {
         const response = await this.httpService.get(`https://freighter.wwe.com/v2/json/series/${id}`).toPromise();
-        const series = response.data.data.series;
-        return series; 
+        return response.data.data.series;
     }
 
     async getSeasonById(id: string): Promise<any> {

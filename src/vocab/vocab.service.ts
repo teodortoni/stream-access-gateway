@@ -9,8 +9,8 @@ export class VocabService {
     return response.data.data;
   }
 
-  async getVocabClassifications(): Promise<any> {
-    const response = await this.httpService.get('https://freighter.wwe.com/v2/vocabs/classifications').toPromise();
+  async getVocabType(vocabulary_type: string): Promise<any> {
+    const response = await this.httpService.get(`https://freighter.wwe.com/v2/vocabs/${vocabulary_type}`).toPromise();
     return response.data.data;
   }
 }

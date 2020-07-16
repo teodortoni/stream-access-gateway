@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Get } from '@nestjs/common';
+import { Controller, UseGuards, Get, Param } from '@nestjs/common';
 import { VocabService } from './vocab.service';
 import { AxiosResponse } from 'axios';
 import { AuthGuard } from '@nestjs/passport';
@@ -17,9 +17,9 @@ export class VocabController {
 
   @UseGuards(AuthGuard('jwt'))
   @Scopes()
-  @Get('vocab/classifications')
-  getVocabClassifications(): Promise<AxiosResponse<any>> {
-    return this.vocabService.getVocabClassifications();
+  @Get('vocab/:vocabulary_type')
+  getVocabType(@Param('vocabulary_type') vocabulary_type: string): Promise<AxiosResponse<any>> {
+    return this.vocabService.getVocabType(vocabulary_type);
   }
 
 }
