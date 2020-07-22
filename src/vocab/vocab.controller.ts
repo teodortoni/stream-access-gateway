@@ -9,14 +9,14 @@ export class VocabController {
   constructor(private vocabService: VocabService) {}
 
   @UseGuards(AuthGuard('jwt'))
-  @Scopes('content_meta_get')
+  @Scopes('controlled_vocab_meta_get')
   @Get('vocab')
   getVocab(): Promise<AxiosResponse<any>> {
     return this.vocabService.getVocab();
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Scopes()
+  @Scopes('controlled_vocab_meta_get')
   @Get('vocab/:vocabulary_type')
   getVocabType(@Param('vocabulary_type') vocabulary_type: string): Promise<AxiosResponse<any>> {
     return this.vocabService.getVocabType(vocabulary_type);

@@ -14,8 +14,6 @@ export class ContentmetadataService {
         video['sunset_date'] = data['sunset_date'];
         video['ads_enabled'] = data['ads_enabled'];
         video['availability'] = data['availability'];
-        video['duration'] = data['durations'];
-        video['audio_languages'] = data['audio_languages'];
         video['closed_caption'] = data['closed_caption'];
         video['frame_preview'] = data['frame_preview'];
         video['cue_points'] = data['cue_points'];
@@ -36,10 +34,6 @@ export class ContentmetadataService {
 
     async getSeasonById(id: string): Promise<any> {
         const response = await this.httpService.get(`https://freighter.wwe.com/v2/json/season/${id}`).toPromise();
-        const data = response.data.data;
-        const season = {};
-        season['tag'] = data['tag'];
-        season['season'] = data['season'];
-        return season;
+        return response.data.data.season;
     }
 }
