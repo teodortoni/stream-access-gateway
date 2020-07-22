@@ -12,11 +12,11 @@ export class ScopesGuard implements CanActivate {
         if (!scopes) {
             return true;
         }
-
         const request = context.switchToHttp().getRequest();
         const tokenArray = request.headers.authorization.split(' ');
         const decodedToken: any = jwt.decode(tokenArray[1]);
-        if (!decodedToken.scopes.includes(scopes)) {
+        const partnerScopes = decodedToken.scopes.replace(/\s*,\s*/g, ",").split(',');
+        if (!partnerScopes.some(scope => scopes.includes(scope))) {
             this.logger.debug(`Method: validate, scopes do not match, application scopes: ${JSON.stringify(scopes)}`);
             throw new UnauthorizedException();
         }
