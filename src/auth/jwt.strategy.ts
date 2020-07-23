@@ -11,9 +11,7 @@ import { ApplicationRepository } from 'src/applications/application.repository';
 export class JwtStrategy extends PassportStrategy(Strategy) {
     logger = new Logger("JwtStrategy");
     constructor(
-        private readonly authService: AuthService,
         private credRepo: CredentialsRepository,
-        private applicationRepo: ApplicationRepository,
         private readonly connection: Connection,
     ) {
         super({
@@ -36,20 +34,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         });
         this.credRepo = this.connection.getCustomRepository(CredentialsRepository);
-        this.applicationRepo = this.connection.getCustomRepository(ApplicationRepository);
     }
 
     async validate(payload: any) {
-        const { applicationId, scopes } = payload;
-
-        // Validate scopes
-        const scopeNames = await this.applicationRepo.getApplicationScopesNames(applicationId);
-        scopes.split(',').forEach(inputScope => {
-            if (!scopeNames.includes(inputScope.trim())) {
-                this.logger.debug(`Method: validate, scopes do not match, application scopes: ${JSON.stringify(scopeNames)}`);
-                throw new UnauthorizedException();
-            }
-        });
         return payload;
     }
 }
