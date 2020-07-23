@@ -18,7 +18,6 @@ export class ContentmetadataController {
 
     @UseGuards(AuthGuard('jwt'))
     @Scope('series_meta_get')
-    @Scope('content_meta_get')
     @Get('series/:id')
     getSeriesById(@Param('id') id: string): Promise<AxiosResponse<any>> {
         return this.contentmetadataService.getSeriesById(id);
