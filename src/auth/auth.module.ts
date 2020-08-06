@@ -15,6 +15,7 @@ import { ScopesModule } from 'src/scopes/scopes.module';
 import { ScopesRepository } from 'src/scopes/scopes.repository';
 import { AccessTokenService } from 'src/access-token/access-token.service';
 import { AccessTokenRepository } from 'src/access-token/access-token.repository';
+import { JwtStrategy } from './jwt.strategy';
 import configs from 'config/defaultconfigs';
 import * as jwt from 'jsonwebtoken';
 import { EncryptionKeypairModule } from 'src/encryptionkeypair/encryptionkeypair.module';
@@ -25,37 +26,39 @@ const algorithm: jwt.Algorithm = configs().app.jwt.algorithm as jwt.Algorithm;
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register({
-      secretOrKeyProvider: (
-        requestType: JwtSecretRequestType,
-        tokenOrPayload: string | object | Buffer,
-      ) => {
-        switch (requestType) {
-          case JwtSecretRequestType.SIGN:
-            // retrieve signing key dynamically
-            const key = tokenOrPayload['key'];
-            const passphrase = tokenOrPayload['passphrase'];
-            delete tokenOrPayload['key'];
-            delete tokenOrPayload['passphrase'];
-            // In case of a private key with passphrase an object { key, passphrase } can be used (based on crypto documentation), 
-            // In this case be sure you pass the algorithm option.
-            return { key, passphrase };
-          case JwtSecretRequestType.VERIFY:
-            // retrieve verify key dynamically
-            return null;
-          default:
-            // retrieve secret dynamically
-            return null;
+    JwtModule.register(
+      {
+        secretOrKeyProvider: (
+          requestType: JwtSecretRequestType,
+          tokenOrPayload: string | object | Buffer,
+        ) => {
+          switch (requestType) {
+            case JwtSecretRequestType.SIGN:
+              // retrieve signing key dynamically
+              const key = tokenOrPayload['key'];
+              const passphrase = tokenOrPayload['passphrase'];
+              delete tokenOrPayload['key'];
+              delete tokenOrPayload['passphrase'];
+              // In case of a private key with passphrase an object { key, passphrase } can be used (based on crypto documentation), 
+              // In this case be sure you pass the algorithm option.
+              return { key, passphrase };
+            case JwtSecretRequestType.VERIFY:
+              // retrieve verify key dynamically
+              return null;
+            default:
+              // retrieve secret dynamically
+              return null;
+          }
+        },
+        signOptions: {
+          expiresIn,
+          algorithm
+        },
+        verifyOptions: {
+          algorithms: [algorithm]
         }
-      },
-      signOptions: {
-        expiresIn,
-        algorithm
-      },
-      verifyOptions: {
-        algorithms: [algorithm]
       }
-    }),
+    ),
     TypeOrmModule.forFeature([PartnersRepository, CredentialsRepository]),
     CredentialsModule,
     ScopesModule,
@@ -71,7 +74,8 @@ const algorithm: jwt.Algorithm = configs().app.jwt.algorithm as jwt.Algorithm;
     CredentialsRepository,
     ScopesRepository,
     AccessTokenService,
-    AccessTokenRepository
+    AccessTokenRepository,
+    JwtStrategy
   ],
   exports: [
     PassportModule,

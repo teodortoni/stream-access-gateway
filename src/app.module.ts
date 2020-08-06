@@ -9,7 +9,11 @@ import { CredentialsModule } from './credentials/credentials.module';
 import { ScopesModule } from './scopes/scopes.module';
 import { AccessTokenModule } from './access-token/access-token.module';
 import { EncryptionKeypairModule } from './encryptionkeypair/encryptionkeypair.module';
+import { ContentmetadataModule } from './contentmetadata/contentmetadata.module';
 import defaultconfigs from '../config/defaultconfigs';
+import { APP_GUARD } from '@nestjs/core';
+import { ScopesGuard } from './scopes/scopes.guard';
+import { VocabModule } from './vocab/vocab.module';
 
 @Module({
   imports: [
@@ -25,7 +29,14 @@ import defaultconfigs from '../config/defaultconfigs';
     ScopesModule,
     AccessTokenModule,
     EncryptionKeypairModule,
+    ContentmetadataModule,
+    VocabModule,
   ],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ScopesGuard,
+    }
+  ]
 })
 export class AppModule {}
