@@ -79,6 +79,7 @@ export class AuthService {
                 applicationId: verified['applicationId'],
                 credentialsId: credentials[0].id,
                 privateKey: credentials[0].privateKey,
+                passphrase: partner.secret,
                 iat: verified['iat'],
                 exp: verified['exp'],
                 scopes: verified['scopes']
