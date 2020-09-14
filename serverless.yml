@@ -6,10 +6,10 @@ plugins:
   # - serverless-plugin-warmup
 
 # custom:
-  # Enable warmup on all functions (only for production and staging)
-  # warmup:
-  #   - production
-  #   - staging
+# Enable warmup on all functions (only for production and staging)
+# warmup:
+#   - production
+#   - staging
 
 provider:
   name: aws
@@ -48,12 +48,13 @@ package:
 functions:
   runstream-access-gateway:
     handler: dist/src/lambda.handler
+    timeout: 16
     events:
       - http:
-          path: '/'
+          path: "/"
           method: any
           cors: true
       - http:
-          path: '{proxy+}'
+          path: "{proxy+}"
           method: any
           cors: true

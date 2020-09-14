@@ -1,7 +1,12 @@
 import { Test } from "@nestjs/testing"
 import { VideostreamsService } from "../videostreams.service"
 import { VideoStreamsRepository } from "../videostreams.repository"
-import { HttpService, InternalServerErrorException } from "@nestjs/common"
+import {
+  HttpService,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException
+} from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { VideoStreamParams } from "../dto/video-streams-params.dto"
 import * as EdgeAuth from "akamai-edgeauth"
@@ -12,11 +17,11 @@ jest.mock("akamai-edgeauth", () => {
       options: {
         tokenName: "__token__"
       },
-      generateURLToken: jest.fn().mockImplementation((url) => {
+      generateACLToken: jest.fn().mockImplementation((url) => {
         if (!url) {
           throw new Error("You must provide url")
         }
-        return "exp=1596479508~hmac=de557804aebb84ca52e5bc1db93735ca5ef14f16a134747acd9bc172e0ff54a9"
+        return "exp=1599133908~acl=/*~hmac=53ce795bb3a29e0d432303aa8897ebfa6697653c8b7e327769c4043310464662"
       })
     }
   })
@@ -55,7 +60,8 @@ describe("Video Streams Service", () => {
               short: "testShortSynopsis",
               language: "en"
             }
-          ]
+          ],
+          productionid: "nxt34_ntwk"
         }
       }
     }
@@ -69,7 +75,7 @@ describe("Video Streams Service", () => {
     get: jest.fn().mockImplementation((key: string) => {
       switch (key) {
         case "videoStreams.encryptionKey":
-          return "bfdcd7b89fe2359d14d2a9ca5e4178e1"
+          return "acf7eae71cb9f7263c4c5fe0f643c7f7"
 
         default:
           break
@@ -123,12 +129,15 @@ describe("Video Streams Service", () => {
         toPromise: () => Promise.resolve(httpServiceGetData)
       }
       httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
+      // console.log("test HttpService: ", httpService)
       const result = await videoStreamsService.setParams(videoStreamParams).getVideoStream()
       expect(result).toMatchObject({
         duration: "05:19:37",
         id: "ee7d26cd-e319-428f-b067-ee7d40c9f767",
+        // manifestUrl:
+        //   "https://vod-test.sonyliv.wwe.com/e/ee7d26cd_e319_428f_b067_ee7d40c9f767/hls/ee7d26cd_e319_428f_b067_ee7d40c9f767.m3u8?hdnts=exp=1599133908~acl=/*~hmac=53ce795bb3a29e0d432303aa8897ebfa6697653c8b7e327769c4043310464662",
         manifestUrl:
-          "http://vod.sonyliv.wwe.com/vod/e/ee7d26cd_e319_428f_b067_ee7d40c9f767/hls/ee7d26cd_e319_428f_b067_ee7d40c9f767.m3u8?hdnts=exp=1596479508~hmac=de557804aebb84ca52e5bc1db93735ca5ef14f16a134747acd9bc172e0ff54a9",
+          "https://vod-test.sonyliv.wwe.com/e/ee7d26cd-e319-428f-b067-ee7d40c9f767/hls/nxt34_ntwk.m3u8?hdnts=exp=1599133908~acl=/*~hmac=53ce795bb3a29e0d432303aa8897ebfa6697653c8b7e327769c4043310464662",
         name: [
           {
             extra_long: "WrestleMania 35",
@@ -149,11 +158,38 @@ describe("Video Streams Service", () => {
       })
     })
 
+    it("Get videoStream failes to set content", () => {
+      const mockHttpServiceGet = {
+        toPromise: () =>
+          Promise.reject(new NotFoundException({ status: 404, data: { message: "Not available" } }))
+      }
+      httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
+      videoStreamParams.videoId = null
+      expect(videoStreamsService.setParams(videoStreamParams).getVideoStream()).rejects.toThrow(
+        new InternalServerErrorException()
+      )
+    })
+
     it("Get videoStream failes to set content path", () => {
       const mockHttpServiceGet = {
         toPromise: () => Promise.resolve(httpServiceGetData)
       }
       httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
+      videoStreamParams.videoId = null
+      expect(videoStreamsService.setParams(videoStreamParams).getVideoStream()).rejects.toThrow(
+        new InternalServerErrorException()
+      )
+    })
+
+    it("Get videoStream failes to set manifest url", () => {
+      const mockHttpServiceGet = {
+        // toPromise: () => Promise.resolve(httpServiceGetData)
+        toPromise: () => Promise.reject(new UnauthorizedException())
+      }
+      httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
+      const testManifestUrlSpy = jest.spyOn(VideostreamsService.prototype as any, "testManifestUrl")
+      console.log(testManifestUrlSpy)
+      expect(testManifestUrlSpy).not.toHaveBeenCalled()
       videoStreamParams.videoId = null
       expect(videoStreamsService.setParams(videoStreamParams).getVideoStream()).rejects.toThrow(
         new InternalServerErrorException()

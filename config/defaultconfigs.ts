@@ -29,6 +29,7 @@ export default () => ({
     }
   },
   videoStreams: {
+    hostName: process.env.EDGE_AUTH_HOSTNAME,
     encryptionKey: process.env.ENCRYPTION_KEY,
     formats: process.env.VIDEO_STREAMS_FORMATS
   }

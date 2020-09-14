@@ -7,7 +7,6 @@ import {
 } from "@nestjs/common"
 import { VideoStreamParams } from "./dto/video-streams-params.dto"
 import * as EdgeAuth from "akamai-edgeauth"
-import * as http from "http"
 import { ConfigService } from "@nestjs/config"
 import { VideoStreamsRepository } from "./videostreams.repository"
 
@@ -25,7 +24,7 @@ export class VideostreamsService {
 
   /**
    * Video Stream Request Parameters
-   * Contains videoId & format (json or m3u8)
+   * Contains videoId, format (json or m3u8 or mpd) & partner
    */
   private videoStreamParams: VideoStreamParams
 
@@ -37,12 +36,12 @@ export class VideostreamsService {
   /**
    * Path of content in akamai
    */
-  private contentPath: string
+  private contentPath: any
 
   /**
    * Tokenized content url
    */
-  private manifestUrl: string
+  private manifestUrl: string | object
 
   /**
    * Edge Authentication Instance
@@ -51,13 +50,9 @@ export class VideostreamsService {
 
   /**
    * Edge Authentication Parameters
-   * Encryption / Transition Key bfdcd7b89fe2359d14d2a9ca5e4178e1
-   * HLS Segment Encryption Mode AES_128
    */
   private edgeAuthParams = {
-    // hostName: "vod.sonyliv.wwe.com.akamaized.net",
-    hostName: "edgeauth.akamaized.net",
-    encryptionKey: null,
+    hostName: this.configService.get<string>("videoStreams.hostName"),
     windowSeconds: 600,
     token: null
   }
@@ -67,9 +62,8 @@ export class VideostreamsService {
     private configService: ConfigService,
     private videoStreamRepo: VideoStreamsRepository
   ) {
-    this.edgeAuthParams.encryptionKey = this.configService.get<string>("videoStreams.encryptionKey")
     this.edgeAuth = new EdgeAuth({
-      key: this.edgeAuthParams.encryptionKey,
+      key: this.configService.get<string>("videoStreams.encryptionKey"),
       windowSeconds: this.edgeAuthParams.windowSeconds,
       escapeEarly: true
     })
@@ -97,10 +91,15 @@ export class VideostreamsService {
 
   private async setContent(): Promise<void> {
     try {
-      const { data } = await this.httpService
+      const result = await this.httpService
         .get(`https://freighter.wwe.com/v2/json/content/${this.videoStreamParams.videoId}`)
         .toPromise()
-      this.content = data.data
+        .catch((error) => {
+          if (error.response && error.response.status === 404) {
+            throw new NotFoundException(error.response.data.message)
+          }
+        })
+      this.content = result ? result.data.data : null
 
       await this.setContentPath()
     } catch (error) {
@@ -108,9 +107,6 @@ export class VideostreamsService {
         `Method: setContent, data: ${JSON.stringify(this.content)}, ${error}`,
         error.stack
       )
-      if (error.response && error.response.status === 404) {
-        throw new NotFoundException(error.response.data.message)
-      }
       throw new InternalServerErrorException()
     }
   }
@@ -118,12 +114,16 @@ export class VideostreamsService {
   private async setContentPath(): Promise<void> {
     try {
       const { videoId, format } = this.videoStreamParams
-      const domain = "http://vod.sonyliv.wwe.com/vod"
       const contentWweid = videoId.replace(/-/g, "_")
       const firstChar = contentWweid.substr(0, 1)
-      this.contentPath = `${domain}/${firstChar}/${contentWweid}/hls/${contentWweid}.${format}`
-      // this.contentPath =
-      //   "http://vod.sonyliv.wwe.com/vod/3/39f25465_982e_3c44_9e03_273a1f67b3f5/hls/39f25465_982e_3c44_9e03_273a1f67b3f5.m3u8"
+      const pathFormat = format === "m3u8" ? "hls" : format
+      if (format === "json") {
+        const hlsPath = `/${firstChar}/${videoId}/hls/${contentWweid}.m3u8`
+        const dashPath = `/${firstChar}/${videoId}/mpd/${contentWweid}.mpd`
+        this.contentPath = { hlsPath, dashPath }
+      } else {
+        this.contentPath = `/${firstChar}/${videoId}/${pathFormat}/${contentWweid}.${format}`
+      }
 
       await this.setManifestUrl()
     } catch (error) {
@@ -137,41 +137,86 @@ export class VideostreamsService {
 
   private async setManifestUrl(): Promise<void> {
     try {
-      // this.edgeAuthToken = this.edgeAuth.generateURLToken(this.contentPath)
-      this.edgeAuthParams.token = this.edgeAuth.generateURLToken("/akamai/edgeauth")
-      // console.log("edgeAuth: ", this.edgeAuth)
-
-      const options = {
-        method: "GET",
-        hostname: this.edgeAuthParams.hostName,
-        path: `${this.contentPath}?${this.edgeAuth.options.tokenName}=${this.edgeAuthParams.token}`
-        // path: "/akamai/edgeauth",
-        // Cookie: `${this.edgeAuth.options.tokenName}=${this.edgeAuthParams.token}`
-      }
-      // console.log("Options: ", options)
-      const request = http.request(options, (res) => {
-        // console.log("Response: ", res)
-        // console.log("Akamai Edge Response Status: ", res.statusCode)
-        // console.log("Akamai Edge Response Message: ", res.statusMessage)
-      })
-
-      // console.log("Request: ", request)
-      request.on("error", (err) => {
-        // console.error(err)
-      })
-      request.end()
-
-      this.manifestUrl = `${this.contentPath}?hdnts=${this.edgeAuthParams.token}`
-
+      this.manifestUrl = await this.getManifestUrl()
       await this.setVideoStream()
     } catch (error) {
       this.logger.error(
-        `Method: getTokenizedUrlFromAkamai, data: ${JSON.stringify(
-          this.videoStreamParams
-        )}, error code: ${error.code}`,
+        `Method: setManifestUrl, data: ${JSON.stringify(this.videoStreamParams)}, error code: ${
+          error.code
+        }`,
         error.stack
       )
       throw new InternalServerErrorException()
+    }
+  }
+
+  private async getManifestUrl(): Promise<string | object> {
+    try {
+      if (this.videoStreamParams.format === "json") {
+        return await this.getManifestUrlObject()
+      } else {
+        return await this.getManifestUrlString()
+      }
+    } catch (error) {
+      this.logger.error(error)
+    }
+  }
+
+  private async getManifestUrlObject(): Promise<object> {
+    try {
+      this.edgeAuthParams.token = { hlsPathToken: null, dashPathToken: null }
+      return {
+        hls: await this.getTokenizedUrlByFormat("hls"),
+        dash: await this.getTokenizedUrlByFormat("dash")
+      }
+    } catch (error) {
+      this.logger.error(`Method: getManifestUrlObject, error: `, error)
+    }
+  }
+
+  private async getTokenizedUrlByFormat(format: string): Promise<string> {
+    try {
+      const path = format === "hls" ? this.contentPath.hlsPath : this.contentPath.dashPath
+      const pathToken = this.edgeAuth.generateACLToken(path)
+      format === "hls"
+        ? (this.edgeAuthParams.token.hlsPathToken = pathToken)
+        : (this.edgeAuthParams.token.dashPathToken = pathToken)
+
+      return await this.testManifestUrlRequest(
+        `https://${this.edgeAuthParams.hostName}${path}?hdnts=${pathToken}`
+      )
+    } catch (error) {
+      this.logger.error(`Method: getTokenizedUrlByFormat, error: `, error)
+    }
+  }
+
+  private async getManifestUrlString(): Promise<string> {
+    try {
+      this.logger.log("Method: getManifestUrlString")
+      this.edgeAuthParams.token = this.edgeAuth.generateACLToken(this.contentPath)
+      const manifestUrl = `https://${this.edgeAuthParams.hostName}${this.contentPath}?hdnts=${this.edgeAuthParams.token}`
+      return await this.testManifestUrlRequest(manifestUrl)
+    } catch (error) {
+      this.logger.error(`Method: getManifestUrlString, error: `, error)
+    }
+  }
+
+  private async testManifestUrlRequest(manifestUrl: string): Promise<string> {
+    try {
+      const response = await this.httpService
+        .get(`${manifestUrl}`)
+        .toPromise()
+        .catch((error) => {
+          this.logger.error(
+            `Method: testManifestUrl, data: ${JSON.stringify({ manifestUrl })}, error status: ${
+              error.response ? error.response.status : error
+            } | ${error.response ? error.response.statusText : error}`
+          )
+        })
+      return response === undefined ? null : manifestUrl
+      // return manifestUrl
+    } catch (error) {
+      this.logger.error(`Method: testManifestUrlRequest, error: `, error)
     }
   }
 
@@ -202,9 +247,18 @@ export class VideostreamsService {
       const record = {
         clientId: this.videoStreamParams.partner.clientId,
         applicationId: this.videoStreamParams.partner.applicationId,
-        token: this.edgeAuthParams.token,
-        path: this.contentPath,
-        tokenizedPath: this.manifestUrl,
+        token:
+          typeof this.edgeAuthParams.token === "object"
+            ? JSON.stringify(this.edgeAuthParams.token)
+            : this.edgeAuthParams.token,
+        path:
+          typeof this.contentPath === "object"
+            ? JSON.stringify(this.contentPath)
+            : this.contentPath,
+        tokenizedPath:
+          typeof this.manifestUrl === "object"
+            ? JSON.stringify(this.manifestUrl)
+            : this.manifestUrl,
         expiresAt: this.expiresAt()
       }
       await this.videoStreamRepo.store(record)
