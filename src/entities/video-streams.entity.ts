@@ -18,13 +18,13 @@ export class VideoStreams extends BaseEntity {
   @Column({ type: "uuid", length: 36 })
   applicationId: string
 
-  @Column({ type: "varchar", length: 255 })
+  @Column({ type: "text" })
   token: string
 
-  @Column({ type: "varchar", length: 255 })
+  @Column({ type: "text" })
   path: string
 
-  @Column({ type: "varchar", length: 255 })
+  @Column({ type: "text", nullable: true })
   tokenizedPath: string
 
   @Column({ type: "datetime", precision: 6 })

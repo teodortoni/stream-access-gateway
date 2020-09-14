@@ -158,7 +158,7 @@ export class VideostreamsService {
         return await this.getManifestUrlString()
       }
     } catch (error) {
-      this.logger.error(error)
+      this.logger.error(`Method: getManifestUrl, error: `, error)
     }
   }
 
