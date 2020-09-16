@@ -31,6 +31,9 @@ export default () => ({
   videoStreams: {
     hostName: process.env.EDGE_AUTH_HOSTNAME,
     encryptionKey: process.env.ENCRYPTION_KEY,
+    windowSeconds: process.env.TOKEN_EXPIRATION_WINDOW_IN_SECONDS,
+    liveHostName: process.env.EDGE_AUTH_LIVE_HOSTNAME,
+    liveEncryptionKey: process.env.LIVE_ENCRYPTION_KEY,
     formats: process.env.VIDEO_STREAMS_FORMATS
   }
 })
