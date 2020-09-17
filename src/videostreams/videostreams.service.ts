@@ -9,6 +9,7 @@ import { VideoStreamParams } from "./dto/video-streams-params.dto"
 import * as EdgeAuth from "akamai-edgeauth"
 import { ConfigService } from "@nestjs/config"
 import { VideoStreamsRepository } from "./videostreams.repository"
+import { LivevideostreamsService } from "./livevideostreams/livevideostreams.service"
 
 @Injectable()
 export class VideostreamsService {
@@ -60,7 +61,8 @@ export class VideostreamsService {
   constructor(
     private httpService: HttpService,
     private configService: ConfigService,
-    private videoStreamRepo: VideoStreamsRepository
+    private videoStreamRepo: VideoStreamsRepository,
+    private liveVideoStreamService: LivevideostreamsService
   ) {
     this.edgeAuth = new EdgeAuth({
       key: this.configService.get<string>("videoStreams.encryptionKey"),
@@ -154,6 +156,14 @@ export class VideostreamsService {
     try {
       if (this.videoStreamParams.format === "json") {
         return await this.getManifestUrlObject()
+      } else if (this.videoStreamParams.format === "live") {
+        return await this.liveVideoStreamService
+          .setParams({
+            clientId: this.videoStreamParams.partner.clientId,
+            applicationId: this.videoStreamParams.partner.applicationId,
+            liveStreamPath: null
+          })
+          .getTokenizedUrl()
       } else {
         return await this.getManifestUrlString()
       }
@@ -167,7 +177,14 @@ export class VideostreamsService {
       this.edgeAuthParams.token = { hlsPathToken: null, dashPathToken: null }
       return {
         hls: await this.getTokenizedUrlByFormat("hls"),
-        dash: await this.getTokenizedUrlByFormat("dash")
+        dash: await this.getTokenizedUrlByFormat("dash"),
+        live: await this.liveVideoStreamService
+          .setParams({
+            clientId: this.videoStreamParams.partner.clientId,
+            applicationId: this.videoStreamParams.partner.applicationId,
+            liveStreamPath: null
+          })
+          .getTokenizedUrl()
       }
     } catch (error) {
       this.logger.error(`Method: getManifestUrlObject, error: `, error)

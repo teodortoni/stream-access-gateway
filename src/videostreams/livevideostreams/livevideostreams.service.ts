@@ -3,6 +3,8 @@ import { LiveVideoStreamsRepository } from "./livevideostreams.repository"
 import { ConfigService } from "@nestjs/config"
 import { LiveStreamParams } from "../dto/live-stream-params.dto"
 import * as EdgeAuth from "akamai-edgeauth"
+import { PartnerLiveStreamParams } from "../dto/partner-live-stream-params.dto"
+import { LiveVideoStreams } from "src/entities/live-video-streams.entity"
 
 @Injectable()
 export class LivevideostreamsService {
@@ -47,19 +49,46 @@ export class LivevideostreamsService {
     return this
   }
 
-  async storeLiveStreamForPartner() {
+  async storeLiveStreamForPartner(): Promise<LiveVideoStreams> {
     try {
-      await this.tokenizeUrl()
-      return this.tokenizedUrl
+      return await this.storeLiveVideoStream()
     } catch (error) {
       this.logger.error(`Method: storeLiveStreamForPartner`, error.stack)
       throw new InternalServerErrorException()
     }
   }
 
+  async getLiveStreamsForPartner(partnerLiveStreamParams: PartnerLiveStreamParams) {
+    try {
+      return await this.repo.getLiveStreamsForPartner(partnerLiveStreamParams)
+    } catch (error) {
+      this.logger.error(`Method: getLiveStreamsForPartner`, error.stack)
+      throw new InternalServerErrorException()
+    }
+  }
+
+  async getActiveLiveStreamForPartner(partnerLiveStreamParams: PartnerLiveStreamParams) {
+    try {
+      return await this.repo.getActiveLiveStreamForPartner(partnerLiveStreamParams)
+    } catch (error) {
+      this.logger.error(`Method: getLiveStreamsForPartner`, error.stack)
+      throw new InternalServerErrorException()
+    }
+  }
+
+  async getTokenizedUrl(): Promise<string> {
+    await this.tokenizeUrl()
+    return this.tokenizedUrl
+  }
+
   private async tokenizeUrl(): Promise<void> {
     try {
-      const { liveStreamPath: path } = this.liveStreamParams
+      // const { liveStreamPath: path } = this.liveStreamParams
+      const { clientId, applicationId } = this.liveStreamParams
+      const { id: activeLiveStreamId, path } = await this.repo.getActiveLiveStreamForPartner({
+        clientId,
+        applicationId
+      })
 
       // Generate token
       this.edgeAuthParams.token = this.edgeAuth.generateACLToken(`/${path}`)
@@ -73,7 +102,7 @@ export class LivevideostreamsService {
       // If tokenized path test is successful set VideoStreamRecord to be passed
       // to repo.store() and store the record. Otherwise don't save the record.
       if (this.tokenizedUrl) {
-        await this.storeLiveVideoStream()
+        await this.updateLiveVideoStream(activeLiveStreamId)
       }
     } catch (error) {
       this.logger.error(`Method: tokenizeUrl`, error)
@@ -101,20 +130,43 @@ export class LivevideostreamsService {
     }
   }
 
-  private async storeLiveVideoStream() {
+  private async storeLiveVideoStream(): Promise<LiveVideoStreams> {
     try {
       const record = {
         clientId: this.liveStreamParams.clientId,
         applicationId: this.liveStreamParams.applicationId,
+        path: this.liveStreamParams.liveStreamPath
+      }
+      return await this.repo.store(record)
+    } catch (error) {
+      this.logger.error(
+        `Method: storeLiveVideoStream, data: ${JSON.stringify({
+          clientId: this.liveStreamParams.clientId,
+          applicationId: this.liveStreamParams.applicationId,
+          token: this.edgeAuthParams.token,
+          path: this.liveStreamParams.liveStreamPath,
+          tokenizedPath: this.tokenizedUrl,
+          expiresAt: this.expiresAt()
+        })}, error code: ${error.code}`,
+        error.stack
+      )
+      throw new InternalServerErrorException()
+    }
+  }
+
+  private async updateLiveVideoStream(id): Promise<LiveVideoStreams> {
+    try {
+      const record = {
+        id,
         token: this.edgeAuthParams.token,
         path: this.liveStreamParams.liveStreamPath,
         tokenizedPath: this.tokenizedUrl,
         expiresAt: this.expiresAt()
       }
-      await this.repo.store(record)
+      return await this.repo.updateStream(record)
     } catch (error) {
       this.logger.error(
-        `Method: storeLiveVideoStream, data: ${JSON.stringify({
+        `Method: updateLiveVideoStream, data: ${JSON.stringify({
           clientId: this.liveStreamParams.clientId,
           applicationId: this.liveStreamParams.applicationId,
           token: this.edgeAuthParams.token,

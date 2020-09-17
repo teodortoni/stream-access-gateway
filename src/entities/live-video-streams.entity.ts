@@ -18,7 +18,7 @@ export class LiveVideoStreams extends BaseEntity {
   @Column({ type: "uuid", length: 36 })
   applicationId: string
 
-  @Column({ type: "text" })
+  @Column({ type: "text", nullable: true })
   token: string
 
   @Column({ type: "text" })
@@ -27,7 +27,10 @@ export class LiveVideoStreams extends BaseEntity {
   @Column({ type: "text", nullable: true })
   tokenizedPath: string
 
-  @Column({ type: "datetime", precision: 6 })
+  @Column({ type: "boolean", nullable: true })
+  isActive: boolean
+
+  @Column({ type: "datetime", precision: 6, nullable: true })
   expiresAt: Date
 
   @CreateDateColumn()
