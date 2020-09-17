@@ -3,7 +3,7 @@ import { LiveStreamParams } from "../dto/live-stream-params.dto"
 import { LivevideostreamsService } from "./livevideostreams.service"
 import { PartnerLiveStreamParams } from "../dto/partner-live-stream-params.dto"
 
-@Controller("livestream")
+@Controller("v1/livestream")
 export class LiveVideoStreamsController {
   constructor(private liveVideoStreamService: LivevideostreamsService) {}
 
