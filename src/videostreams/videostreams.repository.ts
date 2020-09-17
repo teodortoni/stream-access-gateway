@@ -9,10 +9,19 @@ export class VideoStreamsRepository extends Repository<VideoStreams> {
 
   async store(record: VideoStreamRecord): Promise<VideoStreams> {
     try {
-      const { clientId, applicationId, token, path, tokenizedPath, expiresAt } = record
+      const {
+        clientId,
+        applicationId,
+        contentVersionWweid,
+        token,
+        path,
+        tokenizedPath,
+        expiresAt
+      } = record
       const videoStream = this.create()
       videoStream.clientId = clientId
       videoStream.applicationId = applicationId
+      videoStream.contentVersionWweid = contentVersionWweid
       videoStream.token = token
       videoStream.path = path
       videoStream.tokenizedPath = tokenizedPath

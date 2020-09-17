@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, MaxLength } from "class-validator"
+import { IsString, IsNotEmpty, MaxLength, IsOptional } from "class-validator"
 
 export class LiveStreamParams {
   @IsString()
@@ -10,6 +10,11 @@ export class LiveStreamParams {
   @IsNotEmpty()
   @MaxLength(36)
   applicationId: string
+
+  @IsString()
+  @MaxLength(36)
+  @IsOptional()
+  contentVersionWweid: string
 
   @IsString()
   @IsNotEmpty()

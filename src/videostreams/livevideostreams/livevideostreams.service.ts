@@ -42,6 +42,7 @@ export class LivevideostreamsService {
       windowSeconds: this.edgeAuthParams.windowSeconds,
       escapeEarly: true
     })
+    this.tokenizedUrl = null
   }
 
   setParams(liveStreamParams: LiveStreamParams) {
@@ -85,24 +86,28 @@ export class LivevideostreamsService {
     try {
       // const { liveStreamPath: path } = this.liveStreamParams
       const { clientId, applicationId } = this.liveStreamParams
-      const { id: activeLiveStreamId, path } = await this.repo.getActiveLiveStreamForPartner({
+      const liveVideoStream = await this.repo.getActiveLiveStreamForPartner({
         clientId,
         applicationId
       })
 
-      // Generate token
-      this.edgeAuthParams.token = this.edgeAuth.generateACLToken(`/${path}`)
-      // this.edgeAuthParams.token = this.edgeAuth.generateACLToken(`/*`)
+      if (liveVideoStream) {
+        const { id: activeLiveStreamId, path } = liveVideoStream
 
-      // Test tokenized path
-      this.tokenizedUrl = await this.testTokenizedUrl(
-        `https://${this.edgeAuthParams.hostName}/${path}?hdnts=${this.edgeAuthParams.token}`
-      )
+        // Generate token
+        this.edgeAuthParams.token = this.edgeAuth.generateACLToken(`/${path}`)
+        // this.edgeAuthParams.token = this.edgeAuth.generateACLToken(`/*`)
 
-      // If tokenized path test is successful set VideoStreamRecord to be passed
-      // to repo.store() and store the record. Otherwise don't save the record.
-      if (this.tokenizedUrl) {
-        await this.updateLiveVideoStream(activeLiveStreamId)
+        // Test tokenized path
+        this.tokenizedUrl = await this.testTokenizedUrl(
+          `https://${this.edgeAuthParams.hostName}/${path}?hdnts=${this.edgeAuthParams.token}`
+        )
+
+        // If tokenized path test is successful set VideoStreamRecord to be passed
+        // to repo.store() and store the record. Otherwise don't save the record.
+        if (this.tokenizedUrl) {
+          await this.updateLiveVideoStream(activeLiveStreamId)
+        }
       }
     } catch (error) {
       this.logger.error(`Method: tokenizeUrl`, error)
@@ -161,6 +166,7 @@ export class LivevideostreamsService {
         token: this.edgeAuthParams.token,
         path: this.liveStreamParams.liveStreamPath,
         tokenizedPath: this.tokenizedUrl,
+        contentVersionWweid: this.liveStreamParams.contentVersionWweid,
         expiresAt: this.expiresAt()
       }
       return await this.repo.updateStream(record)

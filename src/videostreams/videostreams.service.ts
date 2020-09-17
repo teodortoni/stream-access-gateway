@@ -161,6 +161,7 @@ export class VideostreamsService {
           .setParams({
             clientId: this.videoStreamParams.partner.clientId,
             applicationId: this.videoStreamParams.partner.applicationId,
+            contentVersionWweid: this.videoStreamParams.videoId,
             liveStreamPath: null
           })
           .getTokenizedUrl()
@@ -182,6 +183,7 @@ export class VideostreamsService {
           .setParams({
             clientId: this.videoStreamParams.partner.clientId,
             applicationId: this.videoStreamParams.partner.applicationId,
+            contentVersionWweid: this.videoStreamParams.videoId,
             liveStreamPath: null
           })
           .getTokenizedUrl()
@@ -264,6 +266,7 @@ export class VideostreamsService {
       const record = {
         clientId: this.videoStreamParams.partner.clientId,
         applicationId: this.videoStreamParams.partner.applicationId,
+        contentVersionWweid: this.videoStreamParams.videoId,
         token:
           typeof this.edgeAuthParams.token === "object"
             ? JSON.stringify(this.edgeAuthParams.token)
