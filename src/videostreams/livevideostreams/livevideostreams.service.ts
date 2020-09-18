@@ -126,7 +126,6 @@ export class LivevideostreamsService {
               error.response ? error.response.status : error
             } | ${error.response ? error.response.statusText : error}`
           )
-          throw new InternalServerErrorException()
         })
       return response === undefined ? null : tokenizedUrl
     } catch (error) {
