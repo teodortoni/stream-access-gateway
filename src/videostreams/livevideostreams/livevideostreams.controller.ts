@@ -1,4 +1,4 @@
-import { Controller, Post, Body, ValidationPipe } from "@nestjs/common"
+import { Controller, Post, Body, ValidationPipe, BadRequestException } from "@nestjs/common"
 import { LiveStreamParams } from "../dto/live-stream-params.dto"
 import { LivevideostreamsService } from "./livevideostreams.service"
 import { PartnerLiveStreamParams } from "../dto/partner-live-stream-params.dto"
@@ -21,6 +21,13 @@ export class LiveVideoStreamsController {
 
   @Post("store")
   storeLiveStreamForPartner(@Body(ValidationPipe) liveStreamParams: LiveStreamParams) {
+    if (liveStreamParams.liveStreamPath.trim().substr(0, 1) !== "/") {
+      throw new BadRequestException({
+        statusCode: 400,
+        message: ["liveStreamPath should start with forward slash"],
+        error: "Bad Request"
+      })
+    }
     return this.liveVideoStreamService.setParams(liveStreamParams).storeLiveStreamForPartner()
   }
 }
