@@ -128,6 +128,7 @@ export class LivevideostreamsService {
           )
         })
       return response === undefined ? null : tokenizedUrl
+      // return tokenizedUrl
     } catch (error) {
       this.logger.error(`Method: testTokenizedUrl`, error)
       throw new InternalServerErrorException()

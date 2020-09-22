@@ -211,7 +211,6 @@ export class VideostreamsService {
 
   private async getManifestUrlString(): Promise<string> {
     try {
-      this.logger.log("Method: getManifestUrlString")
       this.edgeAuthParams.token = this.edgeAuth.generateACLToken(this.contentPath)
       const manifestUrl = `https://${this.edgeAuthParams.hostName}${this.contentPath}?hdnts=${this.edgeAuthParams.token}`
       return await this.testManifestUrlRequest(manifestUrl)
