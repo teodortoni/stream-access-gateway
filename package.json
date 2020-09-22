@@ -24,7 +24,8 @@
     "migration:generate": "ts-node node_modules/.bin/typeorm migration:generate -n",
     "migrations": "node_modules/.bin/ts-node node_modules/.bin/typeorm migration:run",
     "revert:migrations": "ts-node node_modules/.bin/typeorm migration:revert",
-    "typeorm:cache:clear": "ts-node node_modules/.bin/typeorm cache:clear"
+    "typeorm:cache:clear": "ts-node node_modules/.bin/typeorm cache:clear",
+    "deploy": "./scripts/deploy.sh"
   },
   "dependencies": {
     "@nestjs/common": "^7.4.4",

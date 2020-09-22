@@ -11,6 +11,7 @@ npm run generate:ormconfig
 # npm run migrations
 
 # Build distribution (dist) directory 
+npm run prebuild
 npm run build
 
 # Deploy with Serverless if applicable
