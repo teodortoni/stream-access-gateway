@@ -7,9 +7,6 @@ set +a
 # Generate ormconfig.json
 npm run generate:ormconfig
 
-# Run migrations
-# npm run migrations
-
 # Build distribution (dist) directory 
 npm run prebuild
 npm run build
@@ -20,3 +17,6 @@ echo "Deploy with Serverless: " $DEPLOY_WITH_SERVERLESS
 then
     serverless deploy --force -v
 fi
+
+# Run migrations
+# npm run migrations

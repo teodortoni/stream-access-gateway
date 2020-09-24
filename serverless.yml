@@ -48,7 +48,6 @@ package:
 functions:
   runstream-access-gateway:
     handler: dist/src/lambda.handler
-    timeout: 16
     events:
       - http:
           path: "/"
