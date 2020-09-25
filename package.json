@@ -8,7 +8,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
     "dev": "NODE_ENV=development nest start --watch",
     "debug": "nest start --debug --watch",
@@ -24,18 +24,20 @@
     "migration:generate": "ts-node node_modules/.bin/typeorm migration:generate -n",
     "migrations": "node_modules/.bin/ts-node node_modules/.bin/typeorm migration:run",
     "revert:migrations": "ts-node node_modules/.bin/typeorm migration:revert",
-    "typeorm:cache:clear": "ts-node node_modules/.bin/typeorm cache:clear"
+    "typeorm:cache:clear": "ts-node node_modules/.bin/typeorm cache:clear",
+    "deploy": "./scripts/deploy.sh"
   },
   "dependencies": {
-    "@nestjs/common": "^7.0.0",
-    "@nestjs/config": "^0.4.0",
-    "@nestjs/core": "^7.0.0",
-    "@nestjs/jwt": "^7.0.0",
-    "@nestjs/passport": "^7.0.0",
-    "@nestjs/platform-express": "^7.0.0",
-    "@nestjs/typeorm": "^7.0.0",
-    "@types/express": "^4.17.3",
-    "@types/node": "^13.9.1",
+    "@nestjs/common": "^7.4.4",
+    "@nestjs/config": "^0.4.2",
+    "@nestjs/core": "^7.4.4",
+    "@nestjs/jwt": "^7.1.0",
+    "@nestjs/passport": "^7.1.0",
+    "@nestjs/platform-express": "^7.4.4",
+    "@nestjs/typeorm": "^7.1.4",
+    "@types/express": "^4.17.8",
+    "@types/node": "^13.13.21",
+    "akamai-edgeauth": "^0.2.0",
     "aws-lambda": "^1.0.6",
     "aws-serverless-express": "^3.3.8",
     "bcryptjs": "^2.4.3",
@@ -44,31 +46,33 @@
     "mysql": "^2.18.1",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
-    "pg": "^8.0.3",
+    "pg": "^8.3.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^6.5.4",
-    "ts-node": "^8.6.2",
-    "typeorm": "^0.2.24",
-    "typescript": "^3.7.4",
+    "rxjs": "^6.6.3",
+    "ts-node": "^8.10.2",
+    "typeorm": "^0.2.26",
+    "typescript": "^3.9.7",
     "uuid": "^7.0.3"
   },
   "devDependencies": {
-    "@nestjs/cli": "^7.0.0",
-    "@nestjs/schematics": "^7.0.0",
-    "@nestjs/testing": "^7.0.0",
-    "@types/aws-lambda": "^8.10.51",
+    "@nestjs/cli": "^7.5.1",
+    "@nestjs/schematics": "^7.1.2",
+    "@nestjs/testing": "^7.4.4",
+    "@types/aws-lambda": "^8.10.62",
     "@types/aws-serverless-express": "^3.3.3",
     "@types/jest": "25.1.4",
     "@types/passport-oauth2": "^1.4.9",
-    "@types/supertest": "^2.0.8",
-    "@typescript-eslint/eslint-plugin": "^2.23.0",
-    "@typescript-eslint/parser": "^2.23.0",
+    "@types/supertest": "^2.0.10",
+    "@typescript-eslint/eslint-plugin": "^2.34.0",
+    "@typescript-eslint/parser": "^2.34.0",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
-    "eslint-plugin-import": "^2.20.1",
-    "jest": "^25.1.0",
+    "eslint-plugin-import": "^2.22.0",
+    "husky": "4.1.0",
+    "jest": "^25.5.4",
     "prettier": "^1.19.1",
+    "pretty-quick": "^2.0.2",
     "serverless-dotenv-plugin": "^2.4.2",
     "serverless-plugin-warmup": "^4.9.0",
     "supertest": "^4.0.2",
@@ -82,12 +86,27 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "rootDir": ".",
     "testRegex": ".spec.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "coverageDirectory": "./coverage",
+    "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/apps/"
+    ]
+  },
+  "prettier": {
+    "tabWidth": 2,
+    "semi": false,
+    "quoteProps": "consistent",
+    "arrowParens": "always",
+    "printWidth": 100
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged"
+    }
   }
 }

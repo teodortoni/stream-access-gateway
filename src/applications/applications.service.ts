@@ -1,27 +1,33 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { ApplicationRepository } from './application.repository';
-import { ApplicationDataDto } from './dto/application-data.dto';
-import { Applications } from '../entities/applications.entity';
-import { ApplicationScopesDto } from './dto/application-scopes.dto';
-import { Scopes } from '../entities/scopes.entity';
+import { Injectable } from "@nestjs/common"
+import { InjectRepository } from "@nestjs/typeorm"
+import { ApplicationRepository } from "./application.repository"
+import { ApplicationDataDto } from "./dto/application-data.dto"
+import { Applications } from "../entities/applications.entity"
+import { ApplicationScopesDto } from "./dto/application-scopes.dto"
+import { Scopes } from "../entities/scopes.entity"
 
 @Injectable()
 export class ApplicationsService {
-    constructor(
-        @InjectRepository(ApplicationRepository)
-        private repository: ApplicationRepository,
-    ) { }
-    
-    createApplication(applicationDataDto: ApplicationDataDto): Promise<Applications> {
-        return this.repository.createApplication(applicationDataDto);
-    }
+  constructor(
+    @InjectRepository(ApplicationRepository)
+    private repository: ApplicationRepository
+  ) {}
 
-    createApplicationScopesRelationship(applicationScopesDto: ApplicationScopesDto): Promise<Scopes[]> {
-        return this.repository.createApplicationScopesRelationship(applicationScopesDto);
-    }
+  createApplication(applicationDataDto: ApplicationDataDto): Promise<Applications> {
+    return this.repository.createApplication(applicationDataDto)
+  }
 
-    getApplicationScopesNames(applicationId: string): Promise<any[]> {
-        return this.repository.getApplicationScopesNames(applicationId);
-    }
+  createApplicationScopesRelationship(
+    applicationScopesDto: ApplicationScopesDto
+  ): Promise<Scopes[]> {
+    return this.repository.createApplicationScopesRelationship(applicationScopesDto)
+  }
+
+  getApplicationScopesNames(applicationId: string): Promise<any[]> {
+    return this.repository.getApplicationScopesNames(applicationId)
+  }
+
+  getPartnerApplications(clientId: string): Promise<Applications[]> {
+    return this.repository.getPartnerApplications(clientId)
+  }
 }
