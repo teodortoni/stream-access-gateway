@@ -1,4 +1,4 @@
-import { Repository, EntityRepository } from "typeorm"
+import { Repository, EntityRepository, EntityManager, getManager } from "typeorm"
 import * as bcrypt from "bcryptjs"
 import { InternalServerErrorException, Logger, ConflictException } from "@nestjs/common"
 import { PartnerApplicationRegisterData } from "./dto/partner-application-register.data.dto"
@@ -14,11 +14,24 @@ import { CreateKeypairDataDto } from "src/encryptionkeypair/dto/create-keypair-d
 export class PartnersRepository extends Repository<Partners> {
   private logger = new Logger("PartnersRepository")
 
+  constructor(public manager: EntityManager = getManager()) {
+    super()
+  }
+
   async getAll(): Promise<Partners[]> {
     try {
       return await this.find()
     } catch (error) {
       this.logger.error(`Method: getAll, error: ${error}`, error.stack)
+      throw new InternalServerErrorException()
+    }
+  }
+
+  async partner(clientId: string): Promise<Partners> {
+    try {
+      return await this.manager.findOne(Partners, { clientId })
+    } catch (error) {
+      this.logger.error(`Method: partner, error: ${error}`, error.stack)
       throw new InternalServerErrorException()
     }
   }

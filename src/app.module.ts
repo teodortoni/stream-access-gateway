@@ -15,6 +15,7 @@ import defaultconfigs from "../config/defaultconfigs"
 import { APP_GUARD } from "@nestjs/core"
 import { ScopesGuard } from "./scopes/scopes.guard"
 import { VocabModule } from "./vocab/vocab.module"
+import { DashboardModule } from "./dashboard/dashboard.module"
 
 @Module({
   imports: [
@@ -32,7 +33,8 @@ import { VocabModule } from "./vocab/vocab.module"
     EncryptionKeypairModule,
     ContentmetadataModule,
     VocabModule,
-    VideostreamsModule
+    VideostreamsModule,
+    DashboardModule
   ],
   providers: [
     {

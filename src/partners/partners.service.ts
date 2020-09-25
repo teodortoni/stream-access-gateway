@@ -1,6 +1,5 @@
 import { Injectable } from "@nestjs/common"
 import { PartnersRepository } from "./partners.repository"
-import { InjectRepository } from "@nestjs/typeorm"
 import { PartnerApplicationRegisterData } from "./dto/partner-application-register.data.dto"
 import { ApplicationsService } from "../applications/applications.service"
 import { CredentialsService } from "../credentials/credentials.service"
@@ -11,11 +10,10 @@ import { Applications } from "src/entities/applications.entity"
 @Injectable()
 export class PartnersService {
   constructor(
-    @InjectRepository(PartnersRepository)
-    private partnersRepository: PartnersRepository,
     private applicationsService: ApplicationsService,
     private credentialsService: CredentialsService,
-    private encryptionKeypairService: EncryptionKeypairService
+    private encryptionKeypairService: EncryptionKeypairService,
+    private partnersRepository: PartnersRepository
   ) {}
 
   async getAll(): Promise<Partners[]> {
@@ -33,5 +31,9 @@ export class PartnersService {
       this.credentialsService,
       this.encryptionKeypairService
     )
+  }
+
+  async partner(id: string): Promise<Partners> {
+    return await this.partnersRepository.partner(id)
   }
 }
