@@ -4,6 +4,7 @@ import { AuthModule } from "./auth/auth.module"
 import { PartnersModule } from "./partners/partners.module"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { typeOrmConfig } from "../config/typeorm.config"
+import { freighterdbOrmConfig } from "../config/freighterdb.config"
 import { ApplicationsModule } from "./applications/applications.module"
 import { CredentialsModule } from "./credentials/credentials.module"
 import { ScopesModule } from "./scopes/scopes.module"
@@ -15,6 +16,7 @@ import defaultconfigs from "../config/defaultconfigs"
 import { APP_GUARD } from "@nestjs/core"
 import { ScopesGuard } from "./scopes/scopes.guard"
 import { VocabModule } from "./vocab/vocab.module"
+import { FreighterModule } from "./freighter/freighter.module"
 
 @Module({
   imports: [
@@ -27,12 +29,14 @@ import { VocabModule } from "./vocab/vocab.module"
       load: [defaultconfigs]
     }),
     TypeOrmModule.forRoot(typeOrmConfig),
+    TypeOrmModule.forRoot(freighterdbOrmConfig),
     ScopesModule,
     AccessTokenModule,
     EncryptionKeypairModule,
     ContentmetadataModule,
     VocabModule,
-    VideostreamsModule
+    VideostreamsModule,
+    FreighterModule
   ],
   providers: [
     {

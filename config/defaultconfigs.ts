@@ -18,6 +18,16 @@ export default () => ({
       synchronize: process.env.TYPEORM_SYNCHRONIZE,
       displaySql: process.env.DISPLAY_SQL
     },
+    fdb: {
+      type: process.env.FDB_TYPE || "mysql",
+      host: process.env.FHOSTNAME,
+      port: parseInt(process.env.FDB_PORT, 10) || 3306,
+      username: process.env.FUSERNAME,
+      password: process.env.FPASSWORD,
+      database: process.env.FDB_NAME,
+      synchronize: process.env.TYPEORM_SYNCHRONIZE,
+      displaySql: process.env.DISPLAY_SQL
+    },
     jwt: {
       algorithm: "RS256",
       expiresIn: process.env.JWT_EXPIRES_IN || 86400

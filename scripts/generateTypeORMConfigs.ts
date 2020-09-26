@@ -1,5 +1,8 @@
-import { typeOrmConfig } from '../config/typeorm.config';
-import * as fs from 'fs';
+import { typeOrmConfig } from "../config/typeorm.config"
+import { freighterdbOrmConfig } from "../config/freighterdb.config"
+import * as fs from "fs"
 
-fs.writeFileSync('ormconfig.json', JSON.stringify(typeOrmConfig, null, 2));
+const ormConfig = [typeOrmConfig, freighterdbOrmConfig]
+
+fs.writeFileSync("ormconfig.json", JSON.stringify(ormConfig, null, 2))
 // console.log(typeOrmConfig);
