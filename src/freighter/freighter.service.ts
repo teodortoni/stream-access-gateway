@@ -23,16 +23,25 @@ export class FreighterService {
 
   private async getVideoContent(wweid: string): Promise<void> {
     try {
+      this.content = await this.getContent(wweid)
+
+      this.setVideoContent()
+    } catch (error) {
+      this.logger.error(`Method: getVideoContent, wweid: ${wweid}`, error.stack)
+      throw new InternalServerErrorException()
+    }
+  }
+
+  async getContent(wweid: string): Promise<object> {
+    try {
       const sqlQuery = `SELECT * FROM network_deliveries 
             JOIN sony_deliveries
             ON sony_deliveries.wweid=network_deliveries.cv_wweid
             WHERE sony_deliveries.wweid="${wweid}"`
       const content = await this.manager.query(sqlQuery)
-      this.content = !content || content.length < 1 ? null : content[0]
-
-      this.setVideoContent()
+      return !content || content.length < 1 ? null : content[0]
     } catch (error) {
-      this.logger.error(`Method: getVideoContent, wweid: ${wweid}`, error.stack)
+      this.logger.error(`Method: getContent, wweid: ${wweid}`, error.stack)
       throw new InternalServerErrorException()
     }
   }

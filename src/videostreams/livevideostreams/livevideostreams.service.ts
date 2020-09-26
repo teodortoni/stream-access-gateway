@@ -94,13 +94,17 @@ export class LivevideostreamsService {
       if (liveVideoStream) {
         const { id: activeLiveStreamId, path } = liveVideoStream
 
+        console.log(path)
+
         // Generate token
         this.edgeAuthParams.token = this.edgeAuth.generateACLToken(`${path}`)
         // this.edgeAuthParams.token = this.edgeAuth.generateACLToken(`/*`)
 
         // Test tokenized path
         this.tokenizedUrl = await this.testTokenizedUrl(
-          `https://${this.edgeAuthParams.hostName}${path}?hdnts=${this.edgeAuthParams.token}`
+          `https://${this.edgeAuthParams.hostName.trim()}${path.trim()}?hdnts=${
+            this.edgeAuthParams.token
+          }`
         )
 
         // If tokenized path test is successful set VideoStreamRecord to be passed

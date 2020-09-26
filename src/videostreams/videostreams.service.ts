@@ -10,7 +10,11 @@ import * as EdgeAuth from "akamai-edgeauth"
 import { ConfigService } from "@nestjs/config"
 import { VideoStreamsRepository } from "./videostreams.repository"
 import { LivevideostreamsService } from "./livevideostreams/livevideostreams.service"
+<<<<<<< HEAD
 import { expiresAt } from "../../scripts/helpers"
+=======
+import { FreighterService } from "src/freighter/freighter.service"
+>>>>>>> Updates content meta data and video streams to get content from freighter db.
 
 @Injectable()
 export class VideostreamsService {
@@ -63,7 +67,8 @@ export class VideostreamsService {
     private httpService: HttpService,
     private configService: ConfigService,
     private videoStreamRepo: VideoStreamsRepository,
-    private liveVideoStreamService: LivevideostreamsService
+    private liveVideoStreamService: LivevideostreamsService,
+    private freighterService: FreighterService
   ) {
     this.edgeAuth = new EdgeAuth({
       key: this.configService.get<string>("videoStreams.encryptionKey"),
@@ -94,15 +99,23 @@ export class VideostreamsService {
 
   private async setContent(): Promise<void> {
     try {
-      const result = await this.httpService
-        .get(`https://freighter.wwe.com/v2/json/content/${this.videoStreamParams.videoId}`)
-        .toPromise()
-        .catch((error) => {
-          if (error.response && error.response.status === 404) {
-            throw new NotFoundException(error.response.data.message)
-          }
-        })
-      this.content = result ? result.data.data : null
+      // const result = await this.httpService
+      //   .get(`https://freighter.wwe.com/v2/json/content/${this.videoStreamParams.videoId}`)
+      //   .toPromise()
+      //   .catch((error) => {
+      //     if (error.response && error.response.status === 404) {
+      //       throw new NotFoundException(error.response.data.message)
+      //     }
+      //   })
+      // this.content = result ? result.data.data : null
+      const content = await this.freighterService.getContent(this.videoStreamParams.videoId)
+      if (Object.keys(content).length < 1) {
+        throw new NotFoundException(
+          `Could not find a record given the ID: ${this.videoStreamParams.videoId}`
+        )
+      }
+      console.log(content)
+      this.content = content
 
       await this.setContentPath()
     } catch (error) {
@@ -301,6 +314,7 @@ export class VideostreamsService {
   private duration(): string {
     try {
       const { duration } = this.content
+      console.log(duration)
       const newDuration = new Date(null, null, null, null, null, duration)
       if (isNaN(newDuration.getSeconds())) {
         throw new Error("Invalid Date")

@@ -5,87 +5,49 @@ import {
   NotFoundException,
   InternalServerErrorException
 } from "@nestjs/common"
+import { FreighterService } from "src/freighter/freighter.service"
 
 @Injectable()
 export class ContentmetadataService {
   private logger = new Logger("ContentMetadataService")
-  constructor(private httpService: HttpService) {}
+  constructor(private httpService: HttpService, private freighterService: FreighterService) {}
 
-  async getVideoById(id: string): Promise<any> {
+  async getVideoById(wweid: string): Promise<any> {
     try {
-      const response = await this.httpService
-        .get(`https://freighter.wwe.com/v2/json/content/${id}`)
-        .toPromise()
-      const data = response.data.data
-      const video = {}
-      video["video_type"] = data["video_type"]
-      if (data["video_type"] === "supplemental") {
-        video["supplemental_to"] = data["supplemental_to"]
+      const video = await this.freighterService.getVideoById(wweid)
+      if (Object.keys(video).length < 1) {
+        throw new NotFoundException(`Could not find a record given the ID: ${wweid}`)
       }
-      video["content-package"] = data["content-package"]
-      video["release_date"] = data["release_date"]
-      video["sunset_date"] = data["sunset_date"]
-      video["ads_enabled"] = data["ads_enabled"]
-      video["availability"] = data["availability"]
-      video["closed_caption"] = data["closed_caption"]
-      video["episode"] = data["episode"]
-      video["event"] = data["event"]
-      video["tag"] = data["tag"]
-      video["series"] = data["series"]
-      video["season"] = data["season"]
-      video["companion"] = data["companion"]
       return video
     } catch (error) {
-      this.logger.error(
-        `Method: getVideoById, data: ${JSON.stringify({
-          contentVersionWweid: id
-        })}, ${error.message}, status: ${error.status}`,
-        error.stack
-      )
-      if (error.response && error.response.status === 404) {
-        throw new NotFoundException(error.response.data.message)
-      }
-      throw new InternalServerErrorException()
+      this.logger.error(`Method: getVideoById, contentVersionWweid: ${wweid}`, error.stack)
+      throw error.status === 404 ? error : new InternalServerErrorException()
     }
   }
 
-  async getSeriesById(id: string): Promise<any> {
+  async getSeriesById(wweid: string): Promise<object> {
     try {
-      const response = await this.httpService
-        .get(`https://freighter.wwe.com/v2/json/series/${id}`)
-        .toPromise()
-      return response.data.data.series
-    } catch (error) {
-      this.logger.error(
-        `Method: getSeriesById, data: ${JSON.stringify({
-          contentVersionWweid: id
-        })}, ${error.message}, status: ${error.status}`,
-        error.stack
-      )
-      if (error.response && error.response.status === 404) {
-        throw new NotFoundException(error.response.data.message)
+      const series = await this.freighterService.getSeriersById(wweid)
+      if (!series) {
+        throw new NotFoundException(`Could not find a record given the ID: ${wweid}`)
       }
-      throw new InternalServerErrorException()
+      return series
+    } catch (error) {
+      this.logger.error(`Method: getSeriesById, contentVersionWweid: ${wweid}`, error.stack)
+      throw error.status === 404 ? error : new InternalServerErrorException()
     }
   }
 
-  async getSeasonById(id: string): Promise<any> {
+  async getSeasonById(wweid: string): Promise<object> {
     try {
-      const response = await this.httpService
-        .get(`https://freighter.wwe.com/v2/json/season/${id}`)
-        .toPromise()
-      return response.data.data.season
-    } catch (error) {
-      this.logger.error(
-        `Method: getSeasonById, data: ${JSON.stringify({
-          contentVersionWweid: id
-        })}, ${error.message}, status: ${error.status}`,
-        error.stack
-      )
-      if (error.response && error.response.status === 404) {
-        throw new NotFoundException(error.response.data.message)
+      const season = await this.freighterService.getSeasonById(wweid)
+      if (!season) {
+        throw new NotFoundException(`Could not find a record given the ID: ${wweid}`)
       }
-      throw new InternalServerErrorException()
+      return season
+    } catch (error) {
+      this.logger.error(`Method: getSeasonById, contentVersionWweid: ${wweid}`, error.stack)
+      throw error.status === 404 ? error : new InternalServerErrorException()
     }
   }
 }

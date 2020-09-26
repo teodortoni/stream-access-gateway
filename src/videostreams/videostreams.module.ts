@@ -6,6 +6,7 @@ import { VideoStreamsRepository } from "./videostreams.repository"
 import { LiveVideoStreamsController } from "./livevideostreams/livevideostreams.controller"
 import { LivevideostreamsService } from "./livevideostreams/livevideostreams.service"
 import { LiveVideoStreamsRepository } from "./livevideostreams/livevideostreams.repository"
+import { FreighterService } from "src/freighter/freighter.service"
 
 @Module({
   imports: [
@@ -13,6 +14,6 @@ import { LiveVideoStreamsRepository } from "./livevideostreams/livevideostreams.
     TypeOrmModule.forFeature([VideoStreamsRepository, LiveVideoStreamsRepository])
   ],
   controllers: [VideostreamsController, LiveVideoStreamsController],
-  providers: [VideostreamsService, LivevideostreamsService]
+  providers: [VideostreamsService, LivevideostreamsService, FreighterService]
 })
 export class VideostreamsModule {}
