@@ -38,8 +38,24 @@ export class FreighterService {
             JOIN sony_deliveries
             ON sony_deliveries.wweid=network_deliveries.cv_wweid
             WHERE sony_deliveries.wweid="${wweid}"`
-      const content = await this.manager.query(sqlQuery)
-      return !content || content.length < 1 ? null : content[0]
+      let content = await this.manager.query(sqlQuery)
+      if (content || content.length > 0 || content !== undefined) {
+        content = content[0]
+        content.body = JSON.parse(content.body)
+        delete content.body.audio
+        delete content.body.cue_points
+        delete content.body.cue_points_json
+        delete content.body.frame_preview
+        delete content.body.closed_caption
+
+        content.body.episode.wweid = content.wweid
+        content.body.episode.wweidSource = "content_versions"
+        content.body.episode.image = content.images
+        content.body.video = {}
+        console.log(content)
+        return content
+      }
+      return null
     } catch (error) {
       this.logger.error(`Method: getContent, wweid: ${wweid}`, error.stack)
       throw new InternalServerErrorException()
@@ -49,36 +65,24 @@ export class FreighterService {
   private setVideoContent() {
     try {
       this.video = {}
-      const body = this.content ? JSON.parse(this.content.body) : null
 
-      if (body) {
-        delete body.audio
-        delete body.cue_points
-        delete body.cue_points_json
-        delete body.frame_preview
-        delete body.closed_caption
-
-        body.episode.wweid = this.content.cv_wweid
-        body.episode.wweidSource = "content_versions"
-        body.episode.image = this.content.images
-        body.video = {}
-
-        this.video["video_type"] = body.video_type
-        this.video["content-package"] = body["content-package"]
-        this.video["release_date"] = body.release_date
-        this.video["sunset_date"] = body.sunset_date
-        this.video["ads_enabled"] = body.ads_enabled
-        this.video["availability"] = body.availability
-        this.video["closed_caption"] = body.closed_caption
-        this.video["frame_preview"] = body.frame_preview
-        this.video["cue_points"] = body.cue_points
-        this.video["cue_points_json"] = body.cue_points_json
-        this.video["episode"] = body.episode
-        this.video["event"] = body.event
-        this.video["tag"] = body.tag
-        this.video["series"] = body.series
-        this.video["season"] = body.season
-        this.video["companion"] = body.companion
+      if (this.content) {
+        this.video["video_type"] = this.content.body.video_type
+        this.video["content-package"] = this.content.body["content-package"]
+        this.video["release_date"] = this.content.body.release_date
+        this.video["sunset_date"] = this.content.body.sunset_date
+        this.video["ads_enabled"] = this.content.body.ads_enabled
+        this.video["availability"] = this.content.body.availability
+        this.video["closed_caption"] = this.content.body.closed_caption
+        this.video["frame_preview"] = this.content.body.frame_preview
+        this.video["cue_points"] = this.content.body.cue_points
+        this.video["cue_points_json"] = this.content.body.cue_points_json
+        this.video["episode"] = this.content.body.episode
+        this.video["event"] = this.content.body.event
+        this.video["tag"] = this.content.body.tag
+        this.video["series"] = this.content.body.series
+        this.video["season"] = this.content.body.season
+        this.video["companion"] = this.content.body.companion
       }
     } catch (error) {
       this.logger.error(`Method: setVideoContent, content: ${this.content}`, error.stack)

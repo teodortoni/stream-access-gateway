@@ -254,7 +254,7 @@ export class VideostreamsService {
 
   private async setVideoStream(): Promise<void> {
     try {
-      const { episode } = this.content
+      const { episode } = this.content.body
       this.videoStream = {
         id: episode.wweid,
         manifestUrl: this.manifestUrl,
