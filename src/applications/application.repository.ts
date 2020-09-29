@@ -125,7 +125,11 @@ export class ApplicationRepository extends Repository<Applications> {
 
   async getPartnerApplications(clientId: string): Promise<Applications[]> {
     try {
-      return await this.manager.find(Applications, { where: { clientId }, relations: ["scopes"] })
+      const applications = await this.manager.find(Applications, {
+        where: { clientId },
+        relations: ["scopes", "credentials", "accessTokens"]
+      })
+      return applications
     } catch (error) {
       this.logger.error(
         `Method: getPartnerApplications, clientId: ${JSON.stringify(clientId)}, error:`,

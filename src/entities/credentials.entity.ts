@@ -1,31 +1,48 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import {
+  BaseEntity,
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToOne,
+  JoinColumn
+} from "typeorm"
+import { Applications } from "./applications.entity"
 
 @Entity()
 export class Credentials extends BaseEntity {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+  @PrimaryGeneratedColumn("uuid")
+  id: string
 
-    @Column({ "type": "uuid", "length": 36 })
-    clientId: string;
+  @Column({ type: "uuid", length: 36 })
+  clientId: string
 
-    @Column({ "type": "uuid", "length": 36 })
-    applicationId: string;
+  @Column({ type: "uuid", length: 36 })
+  applicationId: string
 
-    @Column({ "type": "text" })
-    publicKey: string;
+  @Column({ type: "text" })
+  publicKey: string
 
-    @Column({ "type": "text" })
-    privateKey: string;
+  @Column({ type: "text" })
+  privateKey: string
 
-    @Column({ "type": "boolean" })
-    active: boolean;
+  @Column({ type: "boolean" })
+  active: boolean
 
-    @Column({ "type": "datetime", "precision": 6, "nullable": true})
-    revokedAt: Date;
+  @Column({ type: "datetime", precision: 6, nullable: true })
+  revokedAt: Date
 
-    @CreateDateColumn()
-    createdAt: Date;
+  @CreateDateColumn()
+  createdAt: Date
 
-    @UpdateDateColumn()
-    updatedAt: Date;
+  @UpdateDateColumn()
+  updatedAt: Date
+
+  @OneToOne(
+    (type) => Applications,
+    (application) => application.credentials
+  )
+  @JoinColumn()
+  application: Applications
 }

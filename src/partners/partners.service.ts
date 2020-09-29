@@ -36,4 +36,6 @@ export class PartnersService {
   async partner(id: string): Promise<Partners> {
     return await this.partnersRepository.partner(id)
   }
+
+  async delete(id: string) {}
 }
