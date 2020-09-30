@@ -59,9 +59,8 @@ export class FreighterService {
 
         content.body.episode.wweid = content.wweid
         content.body.episode.wweidSource = "content_versions"
-        content.body.episode.image = content.images
+        content.body.episode.image = JSON.parse(content.images)
         content.body.video = {}
-        console.log(content)
         return content
       }
       return null
@@ -103,7 +102,7 @@ export class FreighterService {
     try {
       const sqlQuery = `SELECT * FROM network_deliveries WHERE wweid="${wweid}" LIMIT 1`
       const series = await this.manager.query(sqlQuery)
-      return !series || series.length < 1 ? null : JSON.parse(series[0].body)
+      return !series || series.length < 1 ? null : JSON.parse(series[0].body).series
     } catch (error) {
       this.logger.error(`Method: getSeriesById, wweid: ${wweid}`, error.stack)
       throw new InternalServerErrorException()
@@ -114,7 +113,7 @@ export class FreighterService {
     try {
       const sqlQuery = `SELECT * FROM network_deliveries WHERE wweid="${wweid}" LIMIT 1`
       const season = await this.manager.query(sqlQuery)
-      return !season || season.length < 1 ? null : JSON.parse(season[0].body)
+      return !season || season.length < 1 ? null : JSON.parse(season[0].body).season
     } catch (error) {
       this.logger.error(`Method: getSeasonById, wweid: ${wweid}`, error.stack)
       throw new InternalServerErrorException()

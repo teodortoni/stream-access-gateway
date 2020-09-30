@@ -94,8 +94,6 @@ export class LivevideostreamsService {
       if (liveVideoStream) {
         const { id: activeLiveStreamId, path } = liveVideoStream
 
-        console.log(path)
-
         // Generate token
         this.edgeAuthParams.token = this.edgeAuth.generateACLToken(`${path}`)
         // this.edgeAuthParams.token = this.edgeAuth.generateACLToken(`/*`)

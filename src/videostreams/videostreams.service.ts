@@ -114,7 +114,6 @@ export class VideostreamsService {
           `Could not find a record given the ID: ${this.videoStreamParams.videoId}`
         )
       }
-      console.log(content)
       this.content = content
 
       await this.setContentPath()
@@ -314,7 +313,6 @@ export class VideostreamsService {
   private duration(): string {
     try {
       const { duration } = this.content
-      console.log(duration)
       const newDuration = new Date(null, null, null, null, null, duration)
       if (isNaN(newDuration.getSeconds())) {
         throw new Error("Invalid Date")
