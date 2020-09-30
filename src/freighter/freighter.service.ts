@@ -1,5 +1,11 @@
-import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common"
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger
+} from "@nestjs/common"
 import { InjectEntityManager } from "@nestjs/typeorm"
+import { FreighterS3 } from "scripts/FreighterS3"
 import { EntityManager } from "typeorm"
 
 @Injectable()
@@ -8,7 +14,10 @@ export class FreighterService {
   private video
   private content
 
-  constructor(@InjectEntityManager("freighterdb") private manager: EntityManager) {}
+  constructor(
+    @InjectEntityManager("freighterdb") private manager: EntityManager,
+    private s3: FreighterS3
+  ) {}
 
   async getVideoById(wweid: string) {
     try {
@@ -108,6 +117,85 @@ export class FreighterService {
       return !season || season.length < 1 ? null : JSON.parse(season[0].body)
     } catch (error) {
       this.logger.error(`Method: getSeasonById, wweid: ${wweid}`, error.stack)
+      throw new InternalServerErrorException()
+    }
+  }
+
+  async getVocab() {
+    try {
+      const enabled = await this.isVocabEnabled()
+
+      const value = enabled.replace(/\[/g, "(").replace(/\]/g, ")")
+
+      const output = {}
+      const entriesQuery = `SELECT production_id, md5 FROM network_deliveries WHERE production_id IN ${value}`
+      const entries = await this.manager.query(entriesQuery)
+
+      for (const entry of entries) {
+        output[entry.production_id] = entry.md5
+      }
+
+      for (const vocab of JSON.parse(enabled)) {
+        if (output[vocab] === undefined) {
+          const details = await this.getVocabTypeDetails(vocab)
+          if (details.data.success) {
+            output[vocab] = details.data.md5
+          }
+        }
+      }
+
+      return output
+    } catch (error) {
+      this.logger.error(`Method: getVocab, `, error.stack)
+      throw new InternalServerErrorException()
+    }
+  }
+
+  async isVocabEnabled(vocab?: string) {
+    const sqlQuery = `SELECT value FROM app_config WHERE flag="enabled_vocabularies" AND active=1 LIMIT 1`
+    const enabled = await this.manager.query(sqlQuery)
+    if (!enabled || (vocab !== undefined && enabled[0].value.indexOf(vocab) < 0)) {
+      throw new InternalServerErrorException("Could not load application configuration.")
+    }
+
+    return enabled[0].value
+  }
+
+  async getVocabTypeDetails(vocab: string) {
+    try {
+      if (!this.isVocabEnabled(vocab)) {
+        throw new BadRequestException("Unregistered vocabulary requested.")
+      }
+
+      const typeDetailsQuery = `SELECT body, md5 FROM network_deliveries WHERE delivery_type="controlled_vocabulary" AND production_id="${vocab}" AND enabled=1 LIMIT 1`
+      const typeDetails = await this.manager.query(typeDetailsQuery)
+
+      const location = `controlled_vocabularies/${vocab}.json`
+
+      const remote = await this.getRemoteVocab(location)
+
+      return typeDetails ? JSON.parse(typeDetails[0].body) : JSON.parse(remote.body)
+    } catch (error) {
+      this.logger.error(`Method: getVocabTypeDetails, `, error.stack)
+      throw new InternalServerErrorException()
+    }
+  }
+
+  async getRemoteVocab(location) {
+    try {
+      const remote = await this.s3.get(location)
+      if (!remote) {
+        return undefined
+      }
+
+      return {
+        lmod: new Date(remote["LastModified"]),
+        body: JSON.parse(remote.Body.toString()),
+        md5:
+          remote.Metadata.md5 !== undefined ? remote.Metadata.md5 : remote.ETag.replace(/"/gi, "")
+      }
+    } catch (error) {
+      this.logger.error(`Method: getRemoteVocab, `, error.stack)
       throw new InternalServerErrorException()
     }
   }

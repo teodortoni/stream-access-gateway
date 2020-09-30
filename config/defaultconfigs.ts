@@ -28,6 +28,13 @@ export default () => ({
       synchronize: process.env.TYPEORM_SYNCHRONIZE,
       displaySql: process.env.DISPLAY_SQL
     },
+    freighter: {
+      s3: {
+        access: process.env.FARN_ACCESS,
+        secret: process.env.FARN_SECRET,
+        bucket: process.env.FS3_BUCKET
+      }
+    },
     jwt: {
       algorithm: "RS256",
       expiresIn: process.env.JWT_EXPIRES_IN || 86400
