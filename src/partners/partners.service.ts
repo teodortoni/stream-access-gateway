@@ -37,5 +37,7 @@ export class PartnersService {
     return await this.partnersRepository.partner(id)
   }
 
-  async delete(id: string) {}
+  async delete(partner: Partners) {
+    return await this.partnersRepository.manager.remove(partner)
+  }
 }

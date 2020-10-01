@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common"
-import { TypeOrmModule } from "@nestjs/typeorm"
 import { AccessTokenModule } from "src/access-token/access-token.module"
 import { AccessTokenService } from "src/access-token/access-token.service"
+import { ApplicationRepository } from "src/applications/application.repository"
 import { ApplicationsModule } from "src/applications/applications.module"
 import { ApplicationsService } from "src/applications/applications.service"
 import { CredentialsModule } from "src/credentials/credentials.module"
@@ -11,6 +11,7 @@ import { EncryptionKeypairService } from "src/encryptionkeypair/encryptionkeypai
 import { PartnersModule } from "src/partners/partners.module"
 import { PartnersRepository } from "src/partners/partners.repository"
 import { PartnersService } from "src/partners/partners.service"
+import { ScopesRepository } from "src/scopes/scopes.repository"
 import { DashboardController } from "./dashboard.controller"
 import { DashboardService } from "./dashboard.service"
 
@@ -30,7 +31,9 @@ import { DashboardService } from "./dashboard.service"
     CredentialsService,
     EncryptionKeypairService,
     AccessTokenService,
-    PartnersRepository
+    PartnersRepository,
+    ApplicationRepository,
+    ScopesRepository
   ]
 })
 export class DashboardModule {}
