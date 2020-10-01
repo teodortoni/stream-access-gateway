@@ -127,7 +127,7 @@ export class ApplicationRepository extends Repository<Applications> {
     try {
       const applications = await this.manager.find(Applications, {
         where: { clientId },
-        relations: ["scopes", "credentials", "accessTokens"]
+        relations: ["scopes", "credentials"]
       })
       return applications
     } catch (error) {

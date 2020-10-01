@@ -35,7 +35,6 @@ export class PartnersRepository extends Repository<Partners> {
           "applications",
           "applications.scopes",
           "applications.credentials",
-          "applications.accessTokens",
           "encryptionKeypair"
         ]
       })
