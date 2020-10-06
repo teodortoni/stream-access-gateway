@@ -120,11 +120,11 @@ export class VideostreamsService {
       const firstChar = contentWweid.substr(0, 1)
       const pathFormat = format === "m3u8" ? "hls" : format
       if (format === "json") {
-        const hlsPath = `/${firstChar}/${videoId}/hls/${contentWweid}.m3u8`
-        const dashPath = `/${firstChar}/${videoId}/mpd/${contentWweid}.mpd`
+        const hlsPath = `/${firstChar}/${contentWweid}/hls/${contentWweid}.m3u8`
+        const dashPath = `/${firstChar}/${contentWweid}/mpd/${contentWweid}.mpd`
         this.contentPath = { hlsPath, dashPath }
       } else {
-        this.contentPath = `/${firstChar}/${videoId}/${pathFormat}/${contentWweid}.${format}`
+        this.contentPath = `/${firstChar}/${contentWweid}/${pathFormat}/${contentWweid}.${format}`
       }
 
       await this.setManifestUrl()
@@ -221,18 +221,18 @@ export class VideostreamsService {
 
   private async testManifestUrlRequest(manifestUrl: string): Promise<string> {
     try {
-      const response = await this.httpService
-        .get(`${manifestUrl}`)
-        .toPromise()
-        .catch((error) => {
-          this.logger.error(
-            `Method: testManifestUrl, data: ${JSON.stringify({ manifestUrl })}, error status: ${
-              error.response ? error.response.status : error
-            } | ${error.response ? error.response.statusText : error}`
-          )
-        })
-      return response === undefined ? null : manifestUrl
-      // return manifestUrl
+      // const response = await this.httpService
+      //   .get(`${manifestUrl}`)
+      //   .toPromise()
+      //   .catch((error) => {
+      //     this.logger.error(
+      //       `Method: testManifestUrl, data: ${JSON.stringify({ manifestUrl })}, error status: ${
+      //         error.response ? error.response.status : error
+      //       } | ${error.response ? error.response.statusText : error}`
+      //     )
+      //   })
+      // return response === undefined ? null : manifestUrl
+      return manifestUrl
     } catch (error) {
       this.logger.error(`Method: testManifestUrlRequest, error: `, error)
     }

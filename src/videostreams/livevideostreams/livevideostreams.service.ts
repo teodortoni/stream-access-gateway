@@ -117,18 +117,18 @@ export class LivevideostreamsService {
 
   private async testTokenizedUrl(tokenizedUrl: string): Promise<string> {
     try {
-      const response = await this.httpService
-        .get(`${tokenizedUrl}`)
-        .toPromise()
-        .catch((error) => {
-          this.logger.error(
-            `Method: testTokenizedUrl, data: ${JSON.stringify({ tokenizedUrl })}, error status: ${
-              error.response ? error.response.status : error
-            } | ${error.response ? error.response.statusText : error}`
-          )
-        })
-      return response === undefined ? null : tokenizedUrl
-      // return tokenizedUrl
+      // const response = await this.httpService
+      //   .get(`${tokenizedUrl}`)
+      //   .toPromise()
+      //   .catch((error) => {
+      //     this.logger.error(
+      //       `Method: testTokenizedUrl, data: ${JSON.stringify({ tokenizedUrl })}, error status: ${
+      //         error.response ? error.response.status : error
+      //       } | ${error.response ? error.response.statusText : error}`
+      //     )
+      //   })
+      // return response === undefined ? null : tokenizedUrl
+      return tokenizedUrl
     } catch (error) {
       this.logger.error(`Method: testTokenizedUrl`, error)
       throw new InternalServerErrorException()

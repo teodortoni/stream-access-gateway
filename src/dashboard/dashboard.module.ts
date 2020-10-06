@@ -14,6 +14,7 @@ import { PartnersService } from "src/partners/partners.service"
 import { ScopesRepository } from "src/scopes/scopes.repository"
 import { DashboardController } from "./dashboard.controller"
 import { DashboardService } from "./dashboard.service"
+import { PartnersResolver } from "./resolvers/partners.resolver"
 
 @Module({
   imports: [
@@ -33,7 +34,8 @@ import { DashboardService } from "./dashboard.service"
     AccessTokenService,
     PartnersRepository,
     ApplicationRepository,
-    ScopesRepository
+    ScopesRepository,
+    PartnersResolver
   ]
 })
 export class DashboardModule {}

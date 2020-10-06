@@ -16,6 +16,7 @@ import { APP_GUARD } from "@nestjs/core"
 import { ScopesGuard } from "./scopes/scopes.guard"
 import { VocabModule } from "./vocab/vocab.module"
 import { DashboardModule } from "./dashboard/dashboard.module"
+import { GraphQLModule } from "@nestjs/graphql"
 
 @Module({
   imports: [
@@ -28,6 +29,9 @@ import { DashboardModule } from "./dashboard/dashboard.module"
       load: [defaultconfigs]
     }),
     TypeOrmModule.forRoot(typeOrmConfig),
+    GraphQLModule.forRoot({
+      autoSchemaFile: true
+    }),
     ScopesModule,
     AccessTokenModule,
     EncryptionKeypairModule,
