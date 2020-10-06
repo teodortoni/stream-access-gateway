@@ -36,7 +36,6 @@ export class PartnersRepository extends Repository<Partners> {
       partner = this.create()
       partner.name = clientName
       partner.secret = await bcrypt.genSalt()
-      partner.revokedAt = false
       await partner.save()
     } catch (error) {
       this.logger.error(
