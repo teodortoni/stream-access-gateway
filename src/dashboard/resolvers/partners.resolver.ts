@@ -1,14 +1,13 @@
-import { ParseUUIDPipe } from "@nestjs/common"
 import { Args, Query, Resolver } from "@nestjs/graphql"
-import { DashboardService } from "../dashboard.service"
+import { PartnersService } from "src/partners/partners.service"
 import { PartnersType } from "../types/partners.type"
 
 @Resolver((of) => PartnersType)
 export class PartnersResolver {
-  constructor(private dashboardService: DashboardService) {}
+  constructor(private partnerService: PartnersService) {}
 
   @Query((returns) => PartnersType)
   getPartnerObject(@Args("clientId") clientId: string) {
-    return this.dashboardService.getPartnerObject(clientId)
+    return this.partnerService.partner(clientId)
   }
 }

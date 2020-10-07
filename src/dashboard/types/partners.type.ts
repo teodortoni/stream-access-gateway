@@ -1,9 +1,11 @@
-import { Field, ObjectType } from "@nestjs/graphql"
+import { Field, ID, ObjectType } from "@nestjs/graphql"
 import { IsDateString } from "class-validator"
+import { ApplicationsType } from "./applications.type"
+import { EncryptionKeypairType } from "./encryption-keypair.type"
 
 @ObjectType("Partners")
 export class PartnersType {
-  @Field()
+  @Field((type) => ID)
   clientId: string
 
   @Field()
@@ -24,15 +26,9 @@ export class PartnersType {
   @Field()
   updatedAt: string
 
-  // @OneToMany(
-  //   (type) => Applications,
-  //   (applications) => applications.partner
-  // )
-  // applications: Applications
+  @Field((type) => [ApplicationsType])
+  applications: [ApplicationsType]
 
-  // @OneToOne(
-  //   (type) => EncryptionKeypair,
-  //   (encryptionKeypair) => encryptionKeypair.partner
-  // )
-  // encryptionKeypair: EncryptionKeypair
+  @Field((type) => EncryptionKeypairType)
+  encryptionKeypair: EncryptionKeypairType
 }

@@ -58,4 +58,13 @@ export class AccessTokenRepository extends Repository<AccessTokens> {
     )
     return signature
   }
+
+  async getPartnerAccessTokens(clientId: string): Promise<AccessTokens[]> {
+    try {
+      return await this.manager.find(AccessTokens, { where: { clientId } })
+    } catch (error) {
+      this.logger.debug(`Method: getPartnerAccessTokens, clientId: ${clientId}`, error.stack)
+      throw new InternalServerErrorException()
+    }
+  }
 }

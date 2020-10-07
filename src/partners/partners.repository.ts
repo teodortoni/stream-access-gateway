@@ -29,17 +29,17 @@ export class PartnersRepository extends Repository<Partners> {
 
   async partner(clientId: string): Promise<Partners> {
     try {
-      const result = await this.manager.findOne(Partners, {
+      return await this.manager.findOne(Partners, {
         where: { clientId },
         relations: [
           "applications",
+          "applications.partner",
           "applications.scopes",
           "applications.credentials",
+          // "applications.accessTokens",
           "encryptionKeypair"
         ]
       })
-      console.log(result)
-      return result
     } catch (error) {
       this.logger.error(`Method: partner, error: ${error}`, error.stack)
       throw new InternalServerErrorException()
