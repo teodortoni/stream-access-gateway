@@ -2,6 +2,9 @@ service: stream-access-gateway
 
 plugins:
   - serverless-dotenv-plugin
+  # - "@hewmen/serverless-plugin-typescript"
+  - serverless-plugin-optimize
+  - serverless-offline
   # Enable warmup on all functions (only for production and staging)
   # - serverless-plugin-warmup
 
@@ -25,26 +28,27 @@ provider:
     #   - subnet-26da1f79
 
 package:
-  exclude:
-    - node_modules
-    - .git/**
-    - .GitHub/**
-    - config/**
-    - coverage/**
-    - scripts/**
-    - src/**
-    - test/**
-    - .env.example
-    - .eslintrc.js
-    - .gitignore
-    - .GitHub-ci.yml
-    - .prettierrc
-    - nest-cli.json
-    - notes.js
-    - ormconfig.json
-    - tsconfig.build.json
-    - tsconfig.json
-    - README.md
+  individually: true
+  # exclude:
+  #   - node_modules
+  #   - .git/**
+  #   - .GitHub/**
+  #   - config/**
+  #   - coverage/**
+  #   - scripts/**
+  #   - src/**
+  #   - test/**
+  #   - .env.example
+  #   - .eslintrc.js
+  #   - .gitignore
+  #   - .GitHub-ci.yml
+  #   - .prettierrc
+  #   - nest-cli.json
+  #   - notes.js
+  #   - ormconfig.json
+  #   - tsconfig.build.json
+  #   - tsconfig.json
+  #   - README.md
 
 functions:
   runstream-access-gateway:

@@ -1,3 +1,4 @@
+import { ObjectType } from "@nestjs/graphql"
 import {
   BaseEntity,
   Entity,
@@ -10,6 +11,7 @@ import {
 import { Partners } from "./partners.entity"
 
 @Entity()
+@ObjectType()
 export class EncryptionKeypair extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string

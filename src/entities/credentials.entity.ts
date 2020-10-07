@@ -1,3 +1,4 @@
+import { ObjectType } from "@nestjs/graphql"
 import {
   BaseEntity,
   Entity,
@@ -11,6 +12,7 @@ import {
 import { Applications } from "./applications.entity"
 
 @Entity()
+@ObjectType()
 export class Credentials extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string

@@ -1,3 +1,4 @@
+import { ObjectType } from "@nestjs/graphql"
 import {
   BaseEntity,
   Entity,
@@ -8,6 +9,7 @@ import {
 } from "typeorm"
 
 @Entity()
+@ObjectType()
 export class LiveVideoStreams extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string
