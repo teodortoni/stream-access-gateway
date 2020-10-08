@@ -9,22 +9,20 @@ export class FreighterS3 {
   constructor(private configService: ConfigService) {
     this.s3Client = new S3({
       accessKeyId: this.configService.get<string>("app.freighter.s3.access"),
-      secretAccessKey: this.configService.get<string>("app.freighter.s3.accessSecret")
+      secretAccessKey: this.configService.get<string>("app.freighter.s3.secret")
     })
   }
 
   async get(location: string) {
-    const params = {
-      Bucket: this.configService.get<string>("app.freighter.s3.bucket"),
-      Key: location
-    }
-
     try {
+      const params = {
+        Bucket: this.configService.get<string>("app.freighter.s3.bucket"),
+        Key: location
+      }
       if (this.s3Client === undefined) {
         this.logger.error("Method: get, Could not get S3 client...")
         throw new InternalServerErrorException()
       }
-
       return await this.s3Client.getObject(params).promise()
     } catch (err) {
       this.logger.error(`Method: get, File not on S3: ${location}`)

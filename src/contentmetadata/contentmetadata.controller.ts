@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import { Controller, Param, Get, UseGuards, ParseUUIDPipe } from "@nestjs/common"
-=======
-import { Controller, Param, Get, UseGuards } from "@nestjs/common"
->>>>>>> Updates content meta data and video streams to get content from freighter db.
 import { ContentmetadataService } from "./contentmetadata.service"
 import { AxiosResponse } from "axios"
 import { AuthGuard } from "@nestjs/passport"

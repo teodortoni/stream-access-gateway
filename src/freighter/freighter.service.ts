@@ -100,9 +100,11 @@ export class FreighterService {
 
   async getSeriersById(wweid: string): Promise<object | null> {
     try {
-      const sqlQuery = `SELECT * FROM network_deliveries WHERE wweid="${wweid}" LIMIT 1`
-      const series = await this.manager.query(sqlQuery)
-      return !series || series.length < 1 ? null : JSON.parse(series[0].body).series
+      const sqlQuery = `SELECT * FROM network_deliveries WHERE wweid="${wweid}" AND delivery_type="series" LIMIT 1`
+      const result = await this.manager.query(sqlQuery)
+      const series = JSON.parse(result[0].body).series
+      series.image = JSON.parse(result[0].images)
+      return !result || result.length < 1 ? null : series
     } catch (error) {
       this.logger.error(`Method: getSeriesById, wweid: ${wweid}`, error.stack)
       throw new InternalServerErrorException()
@@ -111,9 +113,11 @@ export class FreighterService {
 
   async getSeasonById(wweid: string): Promise<object | null> {
     try {
-      const sqlQuery = `SELECT * FROM network_deliveries WHERE wweid="${wweid}" LIMIT 1`
-      const season = await this.manager.query(sqlQuery)
-      return !season || season.length < 1 ? null : JSON.parse(season[0].body).season
+      const sqlQuery = `SELECT * FROM network_deliveries WHERE wweid="${wweid}" AND delivery_type="season" LIMIT 1`
+      const result = await this.manager.query(sqlQuery)
+      const season = JSON.parse(result[0].body).season
+      season.image = JSON.parse(result[0].images)
+      return !result || result.length < 1 ? null : season
     } catch (error) {
       this.logger.error(`Method: getSeasonById, wweid: ${wweid}`, error.stack)
       throw new InternalServerErrorException()
