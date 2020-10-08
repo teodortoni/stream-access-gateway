@@ -120,11 +120,11 @@ export class VideostreamsService {
       const firstChar = contentWweid.substr(0, 1)
       const pathFormat = format === "m3u8" ? "hls" : format
       if (format === "json") {
-        const hlsPath = `/${firstChar}/${videoId}/hls/${contentWweid}.m3u8`
-        const dashPath = `/${firstChar}/${videoId}/mpd/${contentWweid}.mpd`
+        const hlsPath = `/${firstChar}/${contentWweid}/hls/${contentWweid}.m3u8`
+        const dashPath = `/${firstChar}/${contentWweid}/mpd/${contentWweid}.mpd`
         this.contentPath = { hlsPath, dashPath }
       } else {
-        this.contentPath = `/${firstChar}/${videoId}/${pathFormat}/${contentWweid}.${format}`
+        this.contentPath = `/${firstChar}/${contentWweid}/${pathFormat}/${contentWweid}.${format}`
       }
 
       await this.setManifestUrl()
