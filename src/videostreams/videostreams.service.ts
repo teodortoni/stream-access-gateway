@@ -10,6 +10,7 @@ import * as EdgeAuth from "akamai-edgeauth"
 import { ConfigService } from "@nestjs/config"
 import { VideoStreamsRepository } from "./videostreams.repository"
 import { LivevideostreamsService } from "./livevideostreams/livevideostreams.service"
+import { expiresAt } from "../../scripts/helpers"
 
 @Injectable()
 export class VideostreamsService {
@@ -278,7 +279,7 @@ export class VideostreamsService {
           typeof this.manifestUrl === "object"
             ? JSON.stringify(this.manifestUrl)
             : this.manifestUrl,
-        expiresAt: this.expiresAt()
+        expiresAt: expiresAt(this.edgeAuthParams.windowSeconds)
       }
       await this.videoStreamRepo.store(record)
     } catch (error) {
@@ -289,7 +290,7 @@ export class VideostreamsService {
           token: this.edgeAuthParams.token,
           path: this.contentPath,
           tokenizedPath: this.manifestUrl,
-          expiresAt: this.expiresAt()
+          expiresAt: expiresAt(this.edgeAuthParams.windowSeconds)
         })}, error code: ${error.code}`,
         error.stack
       )
@@ -312,10 +313,5 @@ export class VideostreamsService {
       )
       throw new InternalServerErrorException()
     }
-  }
-
-  private expiresAt(): Date {
-    const dateTime = new Date()
-    return new Date(dateTime.getTime() + this.edgeAuthParams.windowSeconds * 1000)
   }
 }

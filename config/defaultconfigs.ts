@@ -20,7 +20,7 @@ export default () => ({
     },
     jwt: {
       algorithm: "RS256",
-      expiresIn: 2630000
+      expiresIn: process.env.JWT_EXPIRES_IN || 86400
     },
     crypto: {
       hmac: {
