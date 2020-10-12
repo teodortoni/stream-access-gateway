@@ -19,14 +19,14 @@ export class ContentmetadataController {
   @UseGuards(AuthGuard("jwt"))
   @Scope("series_meta_get")
   @Get("series/:id")
-  getSeriesById(@Param("id", new ParseUUIDPipe()) id: string): Promise<AxiosResponse<any>> {
+  getSeriesById(@Param("id", new ParseUUIDPipe()) id: string): Promise<object> {
     return this.contentmetadataService.getSeriesById(id)
   }
 
   @UseGuards(AuthGuard("jwt"))
   @Scope("season_meta_get")
   @Get("season/:id")
-  getSeasonById(@Param("id", new ParseUUIDPipe()) id: string): Promise<AxiosResponse<any>> {
+  getSeasonById(@Param("id", new ParseUUIDPipe()) id: string): Promise<object> {
     return this.contentmetadataService.getSeasonById(id)
   }
 }
