@@ -10,11 +10,7 @@ import * as EdgeAuth from "akamai-edgeauth"
 import { ConfigService } from "@nestjs/config"
 import { VideoStreamsRepository } from "./videostreams.repository"
 import { LivevideostreamsService } from "./livevideostreams/livevideostreams.service"
-<<<<<<< HEAD
 import { expiresAt } from "../../scripts/helpers"
-=======
-import { FreighterService } from "src/freighter/freighter.service"
->>>>>>> Updates content meta data and video streams to get content from freighter db.
 
 @Injectable()
 export class VideostreamsService {
