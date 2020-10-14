@@ -4,7 +4,7 @@ import { AccessTokenDataDto } from "./dto/access-token.data.dto"
 import { InternalServerErrorException, Logger } from "@nestjs/common"
 import * as jwt from "jsonwebtoken"
 import { ConfigService } from "@nestjs/config"
-import { expiresAt } from "../../scripts/helpers"
+import { expiresAt, getUnixTimestamp } from "../../scripts/helpers"
 
 @EntityRepository(AccessTokens)
 export class AccessTokenRepository extends Repository<AccessTokens> {
@@ -22,9 +22,7 @@ export class AccessTokenRepository extends Repository<AccessTokens> {
       accessToken.applicationId = applicationId
       accessToken.credentialsId = credentialsId
       accessToken.signature = this.generateSignature(accessTokenDataDto)
-      accessToken.expiresAt = expiresAt(
-        parseInt(this.configService.get<string>("app.jwt.expiresIn"), 10)
-      )
+      accessToken.expiresAt = expiresAt(this.configService.get<number>("app.jwt.expiresIn"))
       accessToken.expiresIn = this.configService.get<number>("app.jwt.expiresIn")
       await accessToken.save()
       return accessToken
@@ -45,8 +43,8 @@ export class AccessTokenRepository extends Repository<AccessTokens> {
       applicationId: accessTokenDataDto.applicationId,
       credentialsId: accessTokenDataDto.credentialsId,
       scopes: accessTokenDataDto.scopes,
-      iat: accessTokenDataDto.iat,
-      exp: accessTokenDataDto.exp
+      iat: getUnixTimestamp(new Date()),
+      exp: getUnixTimestamp(expiresAt(this.configService.get<number>("app.jwt.expiresIn")))
     }
 
     const signature = jwt.sign(

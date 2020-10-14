@@ -40,3 +40,7 @@ export const expiresAt = (seconds: number): Date => {
   const dateTime = new Date()
   return new Date(dateTime.getTime() + seconds * 1000)
 }
+
+export const getUnixTimestamp = (date: Date): number => {
+  return Math.round(date.getTime() / 1000)
+}
