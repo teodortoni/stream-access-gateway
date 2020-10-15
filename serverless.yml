@@ -22,7 +22,6 @@ provider:
     subnetIds:
       - ${env:AWS_OWN_VPC_SUBNET_1}
       - ${env:AWS_OWN_VPC_SUBNET_2}
-    #   - subnet-26da1f79
 
 package:
   exclude:
@@ -49,6 +48,7 @@ package:
 functions:
   runstream-access-gateway:
     handler: dist/src/lambda.handler
+    name: stream-access-gateway-${env:AWS_OWN_STAGE, dev}-${env:AWS_LAMBDA_NAME}
     events:
       - http:
           path: "/"
