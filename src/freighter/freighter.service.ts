@@ -175,9 +175,10 @@ export class FreighterService {
 
       const location = `controlled_vocabularies/${vocab}.json`
 
-      const remote = await this.getRemoteVocab(location)
+      // const remote = await this.getRemoteVocab(location)
 
-      return typeDetails ? JSON.parse(typeDetails[0].body) : JSON.parse(remote.body)
+      // return typeDetails ? JSON.parse(typeDetails[0].body) : JSON.parse(remote.body)
+      return JSON.parse(typeDetails[0].body)
     } catch (error) {
       this.logger.error(`Method: getVocabTypeDetails, `, error.stack)
       throw new InternalServerErrorException()
