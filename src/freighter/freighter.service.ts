@@ -76,15 +76,15 @@ export class FreighterService {
 
       if (this.content) {
         this.video["video_type"] = this.content.body.video_type
+        if (this.content.body.video_type === "supplemental") {
+          this.video["supplemental_to"] = this.content.body.supplemental_to
+        }
         this.video["content-package"] = this.content.body["content-package"]
         this.video["release_date"] = this.content.body.release_date
         this.video["sunset_date"] = this.content.body.sunset_date
         this.video["ads_enabled"] = this.content.body.ads_enabled
         this.video["availability"] = this.content.body.availability
         this.video["closed_caption"] = this.content.body.closed_caption
-        this.video["frame_preview"] = this.content.body.frame_preview
-        this.video["cue_points"] = this.content.body.cue_points
-        this.video["cue_points_json"] = this.content.body.cue_points_json
         this.video["episode"] = this.content.body.episode
         this.video["event"] = this.content.body.event
         this.video["tag"] = this.content.body.tag
