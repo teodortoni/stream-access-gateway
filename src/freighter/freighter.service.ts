@@ -34,7 +34,7 @@ export class FreighterService {
     try {
       this.content = await this.getContent(wweid)
 
-      this.setVideoContent()
+      await this.setVideoContent()
     } catch (error) {
       this.logger.error(`Method: getVideoContent, wweid: ${wweid}`, error.stack)
       throw new InternalServerErrorException()
@@ -70,14 +70,16 @@ export class FreighterService {
     }
   }
 
-  private setVideoContent() {
+  private async setVideoContent() {
     try {
       this.video = {}
 
       if (this.content) {
         this.video["video_type"] = this.content.body.video_type
         if (this.content.body.video_type === "supplemental") {
-          this.video["supplemental_to"] = this.content.body.supplemental_to
+          this.video["supplemental_to"] = await this.getSupplementalTo(
+            this.content.body.supplemental_to.wweid
+          )
         }
         this.video["content-package"] = this.content.body["content-package"]
         this.video["release_date"] = this.content.body.release_date
@@ -173,7 +175,7 @@ export class FreighterService {
       const typeDetailsQuery = `SELECT body, md5 FROM network_deliveries WHERE delivery_type="controlled_vocabulary" AND production_id="${vocab}" AND enabled=1 LIMIT 1`
       const typeDetails = await this.manager.query(typeDetailsQuery)
 
-      const location = `controlled_vocabularies/${vocab}.json`
+      // const location = `controlled_vocabularies/${vocab}.json`
 
       // const remote = await this.getRemoteVocab(location)
 
@@ -200,6 +202,20 @@ export class FreighterService {
       }
     } catch (error) {
       this.logger.error(`Method: getRemoteVocab, `, error.stack)
+      throw new InternalServerErrorException()
+    }
+  }
+
+  async getSupplementalTo(wweid: string): Promise<object> {
+    try {
+      const query = `SELECT cv_wweid FROM network_deliveries WHERE wweid="${wweid}"`
+      const result = await this.manager.query(query)
+      return {
+        type: "content_versions",
+        wweid: result[0].cv_wweid
+      }
+    } catch (error) {
+      this.logger.error(`Method: getSupplementalTo, `, error)
       throw new InternalServerErrorException()
     }
   }
