@@ -2,7 +2,8 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  Logger
+  Logger,
+  NotFoundException
 } from "@nestjs/common"
 import { InjectEntityManager } from "@nestjs/typeorm"
 import { FreighterS3 } from "scripts/FreighterS3"
@@ -26,7 +27,7 @@ export class FreighterService {
       return this.video
     } catch (error) {
       this.logger.error(`Method: getVideoById, wweid: ${wweid}`, error.stack)
-      throw new InternalServerErrorException()
+      throw error.status === 404 ? error : new InternalServerErrorException()
     }
   }
 
@@ -37,7 +38,7 @@ export class FreighterService {
       await this.setVideoContent()
     } catch (error) {
       this.logger.error(`Method: getVideoContent, wweid: ${wweid}`, error.stack)
-      throw new InternalServerErrorException()
+      throw error.status === 404 ? error : new InternalServerErrorException()
     }
   }
 
@@ -48,7 +49,7 @@ export class FreighterService {
             ON sony_deliveries.wweid=network_deliveries.cv_wweid
             WHERE sony_deliveries.wweid="${wweid}"`
       let content = await this.manager.query(sqlQuery)
-      if (content || content.length > 0 || content !== undefined) {
+      if (content.length > 0 && content !== undefined) {
         content = content[0]
         content.body = JSON.parse(content.body)
         delete content.body.audio
@@ -96,7 +97,7 @@ export class FreighterService {
       }
     } catch (error) {
       this.logger.error(`Method: setVideoContent, content: ${this.content}`, error.stack)
-      throw new InternalServerErrorException()
+      throw error.status === 404 ? error : new InternalServerErrorException()
     }
   }
 
@@ -210,13 +211,18 @@ export class FreighterService {
     try {
       const query = `SELECT cv_wweid FROM network_deliveries WHERE wweid="${wweid}"`
       const result = await this.manager.query(query)
+      if (result[0].cv_wweid === null) {
+        throw new NotFoundException(
+          `Could not find a record given the ID: ${this.content.wweid} supplemental to ID: ${wweid}`
+        )
+      }
       return {
         type: "content_versions",
         wweid: result[0].cv_wweid
       }
     } catch (error) {
       this.logger.error(`Method: getSupplementalTo, `, error)
-      throw new InternalServerErrorException()
+      throw error.status === 404 ? error : new InternalServerErrorException()
     }
   }
 }
