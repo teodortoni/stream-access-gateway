@@ -231,18 +231,18 @@ export class VideostreamsService {
 
   private async testManifestUrlRequest(manifestUrl: string): Promise<string> {
     try {
-      const response = await this.httpService
-        .get(`${manifestUrl}`)
-        .toPromise()
-        .catch((error) => {
-          this.logger.error(
-            `Method: testManifestUrl, data: ${JSON.stringify({ manifestUrl })}, error status: ${
-              error.response ? error.response.status : error
-            } | ${error.response ? error.response.statusText : error}`
-          )
-        })
-      return response === undefined ? null : manifestUrl
-      // return manifestUrl
+      // const response = await this.httpService
+      //   .get(`${manifestUrl}`)
+      //   .toPromise()
+      //   .catch((error) => {
+      //     this.logger.error(
+      //       `Method: testManifestUrl, data: ${JSON.stringify({ manifestUrl })}, error status: ${
+      //         error.response ? error.response.status : error
+      //       } | ${error.response ? error.response.statusText : error}`
+      //     )
+      //   })
+      // return response === undefined ? null : manifestUrl
+      return manifestUrl
     } catch (error) {
       this.logger.error(`Method: testManifestUrlRequest, error: `, error)
     }
