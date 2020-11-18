@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  NotFoundException
-} from "@nestjs/common"
+import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
 import { InjectEntityManager } from "@nestjs/typeorm"
 import { FreighterS3 } from "scripts/FreighterS3"
 import { EntityManager } from "typeorm"
@@ -27,7 +21,7 @@ export class FreighterService {
       return this.video
     } catch (error) {
       this.logger.error(`Method: getVideoById, wweid: ${wweid}`, error.stack)
-      throw error.status === 404 ? error : new InternalServerErrorException()
+      throw error
     }
   }
 
@@ -38,7 +32,7 @@ export class FreighterService {
       await this.setVideoContent()
     } catch (error) {
       this.logger.error(`Method: getVideoContent, wweid: ${wweid}`, error.stack)
-      throw error.status === 404 ? error : new InternalServerErrorException()
+      throw error
     }
   }
 
@@ -67,7 +61,7 @@ export class FreighterService {
       return null
     } catch (error) {
       this.logger.error(`Method: getContent, wweid: ${wweid}`, error.stack)
-      throw new InternalServerErrorException()
+      throw new NotFoundException(`Could not find a record given the ID: ${wweid}`)
     }
   }
 
@@ -97,7 +91,9 @@ export class FreighterService {
       }
     } catch (error) {
       this.logger.error(`Method: setVideoContent, content: ${this.content}`, error.stack)
-      throw error.status === 404 ? error : new InternalServerErrorException()
+      throw error.status === 404
+        ? error
+        : new NotFoundException(`Could not find a record given the ID: ${this.content.wweid}`)
     }
   }
 
@@ -110,7 +106,7 @@ export class FreighterService {
       return !result || result.length < 1 ? null : series
     } catch (error) {
       this.logger.error(`Method: getSeriesById, wweid: ${wweid}`, error.stack)
-      throw new InternalServerErrorException()
+      throw new NotFoundException(`Could not find a record given the ID: ${wweid}`)
     }
   }
 
@@ -123,7 +119,7 @@ export class FreighterService {
       return !result || result.length < 1 ? null : season
     } catch (error) {
       this.logger.error(`Method: getSeasonById, wweid: ${wweid}`, error.stack)
-      throw new InternalServerErrorException()
+      throw new NotFoundException(`Could not find a record given the ID: ${wweid}`)
     }
   }
 
@@ -153,7 +149,7 @@ export class FreighterService {
       return output
     } catch (error) {
       this.logger.error(`Method: getVocab, `, error.stack)
-      throw new InternalServerErrorException()
+      throw new NotFoundException("Could not find a vocab records")
     }
   }
 
@@ -161,7 +157,7 @@ export class FreighterService {
     const sqlQuery = `SELECT value FROM app_config WHERE flag="enabled_vocabularies" AND active=1 LIMIT 1`
     const enabled = await this.manager.query(sqlQuery)
     if (!enabled || (vocab !== undefined && enabled[0].value.indexOf(vocab) < 0)) {
-      throw new InternalServerErrorException("Could not load application configuration.")
+      throw new NotFoundException("Could not load application configuration.")
     }
 
     return enabled[0].value
@@ -184,7 +180,9 @@ export class FreighterService {
       return JSON.parse(typeDetails[0].body)
     } catch (error) {
       this.logger.error(`Method: getVocabTypeDetails, `, error.stack)
-      throw new InternalServerErrorException()
+      throw error.status === 400
+        ? error
+        : new NotFoundException(`Could not find a record given "${vocab}"`)
     }
   }
 
@@ -203,26 +201,26 @@ export class FreighterService {
       }
     } catch (error) {
       this.logger.error(`Method: getRemoteVocab, `, error.stack)
-      throw new InternalServerErrorException()
+      throw new NotFoundException()
     }
   }
 
   async getSupplementalTo(wweid: string): Promise<object> {
     try {
-      const query = `SELECT cv_wweid FROM network_deliveries WHERE wweid="${wweid}"`
+      const query = `SELECT cv_wweid, wweid_source FROM network_deliveries WHERE wweid="${wweid}"`
       const result = await this.manager.query(query)
       if (result[0].cv_wweid === null) {
-        throw new NotFoundException(
-          `Could not find a record given the ID: ${this.content.wweid} supplemental to ID: ${wweid}`
-        )
+        throw new NotFoundException()
       }
       return {
-        type: "content_versions",
+        type: result[0].wweid_source,
         wweid: result[0].cv_wweid
       }
     } catch (error) {
       this.logger.error(`Method: getSupplementalTo, `, error)
-      throw error.status === 404 ? error : new InternalServerErrorException()
+      throw new NotFoundException(
+        `Could not find a record given the ID: ${this.content.wweid} supplemental to ID: ${wweid}`
+      )
     }
   }
 }

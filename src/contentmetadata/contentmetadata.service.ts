@@ -21,7 +21,7 @@ export class ContentmetadataService {
       return video
     } catch (error) {
       this.logger.error(`Method: getVideoById, contentVersionWweid: ${wweid}`, error.stack)
-      throw error.status === 404 ? error : new InternalServerErrorException()
+      throw error.status === 404 ? error : new NotFoundException()
     }
   }
 
@@ -34,7 +34,7 @@ export class ContentmetadataService {
       return series
     } catch (error) {
       this.logger.error(`Method: getSeriesById, contentVersionWweid: ${wweid}`, error.stack)
-      throw error.status === 404 ? error : new InternalServerErrorException()
+      throw error.status === 404 ? error : new NotFoundException()
     }
   }
 
@@ -47,7 +47,7 @@ export class ContentmetadataService {
       return season
     } catch (error) {
       this.logger.error(`Method: getSeasonById, contentVersionWweid: ${wweid}`, error.stack)
-      throw error.status === 404 ? error : new InternalServerErrorException()
+      throw error.status === 404 ? error : new NotFoundException()
     }
   }
 }
