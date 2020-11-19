@@ -182,7 +182,7 @@ export class FreighterService {
       this.logger.error(`Method: getVocabTypeDetails, `, error.stack)
       throw error.status === 400
         ? error
-        : new NotFoundException(`Could not find a record given "${vocab}"`)
+        : new NotFoundException(`Could not find a record given type: ${vocab}`)
     }
   }
 

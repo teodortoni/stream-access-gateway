@@ -90,7 +90,11 @@ export class VideostreamsService {
         }`,
         error.stack
       )
-      throw error
+      throw error.status !== 500
+        ? error
+        : new NotFoundException(
+            `Could not find a record given the ID: ${this.videoStreamParams.videoId}`
+          )
     }
   }
 

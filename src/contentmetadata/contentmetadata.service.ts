@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  HttpService,
-  Logger,
-  NotFoundException,
-  InternalServerErrorException
-} from "@nestjs/common"
+import { Injectable, HttpService, Logger, NotFoundException } from "@nestjs/common"
 import { FreighterService } from "src/freighter/freighter.service"
 
 @Injectable()
