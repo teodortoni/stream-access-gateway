@@ -154,18 +154,22 @@ export class FreighterService {
   }
 
   async isVocabEnabled(vocab?: string) {
-    const sqlQuery = `SELECT value FROM app_config WHERE flag="enabled_vocabularies" AND active=1 LIMIT 1`
-    const enabled = await this.manager.query(sqlQuery)
-    if (!enabled || (vocab !== undefined && enabled[0].value.indexOf(vocab) < 0)) {
-      throw new NotFoundException("Could not load application configuration.")
-    }
+    try {
+      const sqlQuery = `SELECT value FROM app_config WHERE flag="enabled_vocabularies" AND active=1 LIMIT 1`
+      const enabled = await this.manager.query(sqlQuery)
+      if (!enabled || (vocab !== undefined && enabled[0].value.indexOf(vocab) < 0)) {
+        throw new NotFoundException("Could not load application configuration.")
+      }
 
-    return enabled[0].value
+      return enabled[0].value
+    } catch (error) {
+      throw error
+    }
   }
 
   async getVocabTypeDetails(vocab: string) {
     try {
-      if (!this.isVocabEnabled(vocab)) {
+      if (!(await this.isVocabEnabled(vocab))) {
         throw new BadRequestException("Unregistered vocabulary requested.")
       }
 

@@ -3,7 +3,7 @@ import { FreighterService } from "src/freighter/freighter.service"
 
 @Injectable()
 export class VocabService {
-  private logger = new Logger("ContentMetadataService")
+  private logger = new Logger("VocabService")
   constructor(private freighterService: FreighterService) {}
 
   async getVocab(): Promise<any> {
