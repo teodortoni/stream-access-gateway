@@ -103,6 +103,7 @@ export class FreighterService {
       const result = await this.manager.query(sqlQuery)
       const series = JSON.parse(result[0].body).series
       series.image = JSON.parse(result[0].images)
+      series.production_id = result[0].production_id
       return !result || result.length < 1 ? null : series
     } catch (error) {
       this.logger.error(`Method: getSeriesById, wweid: ${wweid}`, error.stack)
@@ -116,6 +117,7 @@ export class FreighterService {
       const result = await this.manager.query(sqlQuery)
       const season = JSON.parse(result[0].body).season
       season.image = JSON.parse(result[0].images)
+      season.production_id = result[0].production_id
       return !result || result.length < 1 ? null : season
     } catch (error) {
       this.logger.error(`Method: getSeasonById, wweid: ${wweid}`, error.stack)
