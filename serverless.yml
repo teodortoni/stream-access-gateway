@@ -2,14 +2,17 @@ service: stream-access-gateway
 
 plugins:
   - serverless-dotenv-plugin
+  - serverless-plugin-datadog
   # Enable warmup on all functions (only for production and staging)
   # - serverless-plugin-warmup
 
-# custom:
-# Enable warmup on all functions (only for production and staging)
-# warmup:
-#   - production
-#   - staging
+custom:
+  # Enable warmup on all functions (only for production and staging)
+  # warmup:
+  #   - production
+  #   - staging
+  datadog:
+    forwarder: arn:aws:lambda:ap-south-1:228212849651:function:datadog-forwarder-Forwarder-GH3BEQA6509Z
 
 provider:
   name: aws
