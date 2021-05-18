@@ -1,3 +1,4 @@
+import { S3 } from "aws-sdk"
 import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
 import { InjectEntityManager } from "@nestjs/typeorm"
 import { FreighterS3 } from "scripts/FreighterS3"
@@ -54,7 +55,7 @@ export class FreighterService {
 
         content.body.episode.wweid = content.wweid
         content.body.episode.wweidSource = "content_versions"
-        content.body.episode.image = JSON.parse(content.images)
+        content.body.episode.image = await this.buildImageObject(JSON.parse(content.image_keys))
         content.body.video = {}
         return content
       }
@@ -97,7 +98,7 @@ export class FreighterService {
     }
   }
 
-  async getSeriersById(wweid: string): Promise<object | null> {
+  async getSeriesById(wweid: string): Promise<object | null> {
     try {
       const sqlQuery = `SELECT * FROM network_deliveries WHERE wweid="${wweid}" AND delivery_type="series" LIMIT 1`
       const result = await this.manager.query(sqlQuery)
@@ -229,4 +230,41 @@ export class FreighterService {
       )
     }
   }
+
+  async buildImageObject(source: object): Promise<object> {
+    let images = {}
+
+    for (let k in source) {
+      images[k] = await this.getSignedURL(source[k])
+    }
+
+    return images
+  }
+
+  async getSignedURL(key: string): Promise<string> {
+    let params = {
+      Bucket: `wwe-network`,
+      Key: key,
+      Expires: 1200
+    }
+  
+    const client = new S3({
+      accessKeyId: process.env.ARN_ACCESS,
+      secretAccessKey: process.env.ARN_SECRET
+    })
+
+    if (!client) {
+      this.logger.error("No S3 Client available.")
+      return null
+    }
+  
+    return new Promise((resolve, reject) => {
+      client.getSignedUrl("getObject", params, (err, url) => {
+        if (err) {
+          reject(err)
+        }
+        resolve(url)
+      })
+    })
+    }
 }
