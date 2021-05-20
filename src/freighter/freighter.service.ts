@@ -244,6 +244,9 @@ export class FreighterService {
   }
 
   async getSignedURL(key: string): Promise<string> {
+    if (!key) {
+      return null
+    }
     let params = {
       Bucket: this.configService.get<string>("app.freighter.s3.bucket"),
       Key: key,
