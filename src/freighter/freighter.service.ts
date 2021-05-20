@@ -1,7 +1,9 @@
+import { S3 } from "aws-sdk"
 import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
 import { InjectEntityManager } from "@nestjs/typeorm"
 import { FreighterS3 } from "scripts/FreighterS3"
 import { EntityManager } from "typeorm"
+import { ConfigService } from "@nestjs/config"
 
 @Injectable()
 export class FreighterService {
@@ -11,7 +13,8 @@ export class FreighterService {
 
   constructor(
     @InjectEntityManager("freighterdb") private manager: EntityManager,
-    private s3: FreighterS3
+    private s3: FreighterS3,
+    private configService: ConfigService
   ) {}
 
   async getVideoById(wweid: string) {
@@ -54,7 +57,7 @@ export class FreighterService {
 
         content.body.episode.wweid = content.wweid
         content.body.episode.wweidSource = "content_versions"
-        content.body.episode.image = JSON.parse(content.images)
+        content.body.episode.image = await this.buildImageObject(JSON.parse(content.image_keys))
         content.body.video = {}
         return content
       }
@@ -97,7 +100,7 @@ export class FreighterService {
     }
   }
 
-  async getSeriersById(wweid: string): Promise<object | null> {
+  async getSeriesById(wweid: string): Promise<object | null> {
     try {
       const sqlQuery = `SELECT * FROM network_deliveries WHERE wweid="${wweid}" AND delivery_type="series" LIMIT 1`
       const result = await this.manager.query(sqlQuery)
@@ -227,6 +230,39 @@ export class FreighterService {
       throw new NotFoundException(
         `Could not find a record given the ID: ${this.content.wweid} supplemental to ID: ${wweid}`
       )
+    }
+  }
+
+  async buildImageObject(source: object): Promise<object> {
+    const images = {}
+
+    for (const k in source) {
+      images[k] = await this.getSignedURL(source[k])
+    }
+
+    return images
+  }
+
+  async getSignedURL(key: string): Promise<string> {
+    try {
+      const params = {
+        Bucket: this.configService.get<string>("app.freighter.s3.bucket"),
+        Key: key
+      }
+
+      const client = new S3({
+        accessKeyId: this.configService.get<string>("app.freighter.s3.access"),
+        secretAccessKey: this.configService.get<string>("app.freighter.s3.secret")
+      })
+      await client.headObject(params).promise()
+      return client.getSignedUrl(
+        "getObject",
+        Object.assign(params, {
+          Expires: parseInt(this.configService.get<string>("app.freighter.s3.expires"))
+        })
+      )
+    } catch (error) {
+      this.logger.error(`Method: getSignedURL, `, error)
     }
   }
 }

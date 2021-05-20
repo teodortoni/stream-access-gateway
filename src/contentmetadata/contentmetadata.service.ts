@@ -21,7 +21,7 @@ export class ContentmetadataService {
 
   async getSeriesById(wweid: string): Promise<object> {
     try {
-      const series = await this.freighterService.getSeriersById(wweid)
+      const series = await this.freighterService.getSeriesById(wweid)
       if (!series) {
         throw new NotFoundException(`Could not find a record given the ID: ${wweid}`)
       }
