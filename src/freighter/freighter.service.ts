@@ -234,9 +234,9 @@ export class FreighterService {
   }
 
   async buildImageObject(source: object): Promise<object> {
-    let images = {}
+    const images = {}
 
-    for (let k in source) {
+    for (const k in source) {
       images[k] = await this.getSignedURL(source[k])
     }
 
@@ -244,32 +244,25 @@ export class FreighterService {
   }
 
   async getSignedURL(key: string): Promise<string> {
-    if (!key) {
-      return null
-    }
-    let params = {
-      Bucket: this.configService.get<string>("app.freighter.s3.bucket"),
-      Key: key,
-      Expires: parseInt(this.configService.get<string>("app.freighter.s3.expires"))
-    }
+    try {
+      const params = {
+        Bucket: this.configService.get<string>("app.freighter.s3.bucket"),
+        Key: key
+      }
 
-    const client = new S3({
-      accessKeyId: this.configService.get<string>("app.freighter.s3.access"),
-      secretAccessKey: this.configService.get<string>("app.freighter.s3.secret")
-    })
-
-    if (!client) {
-      this.logger.error("No S3 Client available.")
-      return null
-    }
-
-    return new Promise((resolve, reject) => {
-      client.getSignedUrl("getObject", params, (err, url) => {
-        if (err) {
-          reject(err)
-        }
-        resolve(url)
+      const client = new S3({
+        accessKeyId: this.configService.get<string>("app.freighter.s3.access"),
+        secretAccessKey: this.configService.get<string>("app.freighter.s3.secret")
       })
-    })
+      await client.headObject(params).promise()
+      return client.getSignedUrl(
+        "getObject",
+        Object.assign(params, {
+          Expires: parseInt(this.configService.get<string>("app.freighter.s3.expires"))
+        })
+      )
+    } catch (error) {
+      this.logger.error(`Method: getSignedURL, `, error)
+    }
   }
 }
