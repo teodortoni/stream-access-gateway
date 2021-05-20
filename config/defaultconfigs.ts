@@ -32,7 +32,8 @@ export default () => ({
       s3: {
         access: process.env.FARN_ACCESS,
         secret: process.env.FARN_SECRET,
-        bucket: process.env.FS3_BUCKET
+        bucket: process.env.FS3_BUCKET,
+        expires: process.env.FIMG_SIGNED_URL_EXPIRES
       }
     },
     jwt: {

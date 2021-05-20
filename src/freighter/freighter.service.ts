@@ -3,6 +3,7 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from "@nes
 import { InjectEntityManager } from "@nestjs/typeorm"
 import { FreighterS3 } from "scripts/FreighterS3"
 import { EntityManager } from "typeorm"
+import { ConfigService } from "@nestjs/config"
 
 @Injectable()
 export class FreighterService {
@@ -12,7 +13,8 @@ export class FreighterService {
 
   constructor(
     @InjectEntityManager("freighterdb") private manager: EntityManager,
-    private s3: FreighterS3
+    private s3: FreighterS3,
+    private configService: ConfigService
   ) {}
 
   async getVideoById(wweid: string) {
@@ -243,21 +245,21 @@ export class FreighterService {
 
   async getSignedURL(key: string): Promise<string> {
     let params = {
-      Bucket: `wwe-network`,
+      Bucket: this.configService.get<string>("app.freighter.s3.bucket"),
       Key: key,
-      Expires: 1200
+      Expires: parseInt(this.configService.get<string>("app.freighter.s3.expires"))
     }
-  
+
     const client = new S3({
-      accessKeyId: process.env.ARN_ACCESS,
-      secretAccessKey: process.env.ARN_SECRET
+      accessKeyId: this.configService.get<string>("app.freighter.s3.access"),
+      secretAccessKey: this.configService.get<string>("app.freighter.s3.secret")
     })
 
     if (!client) {
       this.logger.error("No S3 Client available.")
       return null
     }
-  
+
     return new Promise((resolve, reject) => {
       client.getSignedUrl("getObject", params, (err, url) => {
         if (err) {
@@ -266,5 +268,5 @@ export class FreighterService {
         resolve(url)
       })
     })
-    }
+  }
 }
