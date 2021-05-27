@@ -252,7 +252,8 @@ export class FreighterService {
 
       const client = new S3({
         accessKeyId: this.configService.get<string>("app.freighter.s3.access"),
-        secretAccessKey: this.configService.get<string>("app.freighter.s3.secret")
+        secretAccessKey: this.configService.get<string>("app.freighter.s3.secret"),
+        region: this.configService.get<string>("app.freighter.s3.bucketRegion")
       })
       await client.headObject(params).promise()
       return client.getSignedUrl(
@@ -262,7 +263,7 @@ export class FreighterService {
         })
       )
     } catch (error) {
-      this.logger.error(`Method: getSignedURL, `, error)
+      this.logger.error(`Method: getSignedURL, error: `, error.stack)
     }
   }
 }
