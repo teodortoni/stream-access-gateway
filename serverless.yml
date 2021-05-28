@@ -3,10 +3,13 @@ service: stream-access-gateway
 plugins:
   - serverless-dotenv-plugin
   - serverless-plugin-datadog
+  - serverless-jetpack
   # Enable warmup on all functions (only for production and staging)
   # - serverless-plugin-warmup
 
 custom:
+  serverless-jetpack:
+    mode: npm
   # Enable warmup on all functions (only for production and staging)
   # warmup:
   #   - production
@@ -26,9 +29,22 @@ provider:
       - ${env:AWS_OWN_VPC_SUBNET_1}
       - ${env:AWS_OWN_VPC_SUBNET_2}
 
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            # - "s3:*"
+            - "s3:ListAllMyBuckets"
+            - "s3:ListBucket"
+            - "s3:GetObject"
+          Resource:
+            # - "arn:aws:s3:::*"
+            - "arn:aws:s3:::${env:FS3_BUCKET}"
+            - "arn:aws:s3:::${env:FS3_BUCKET}/*"
+
 package:
   exclude:
-    - node_modules
     - .git/**
     - .GitHub/**
     - config/**
@@ -62,9 +78,8 @@ functions:
           path: "{proxy+}"
           method: any
           cors: true
-
   testrouter:
-    handler: handler.handler
+    handler: dist/src/testrouterHandler.handler
     events:
       - http:
           path: "/testrouter"
