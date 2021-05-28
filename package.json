@@ -97,7 +97,7 @@
     "coverageDirectory": "./coverage",
     "testEnvironment": "node",
     "roots": [
-      "<rootDir>/apps/"
+      "<rootDir>/src/"
     ]
   },
   "prettier": {
