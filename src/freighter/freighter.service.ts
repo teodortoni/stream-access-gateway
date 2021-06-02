@@ -48,12 +48,16 @@ export class FreighterService {
       let content = await this.manager.query(sqlQuery)
       if (content.length > 0 && content !== undefined) {
         content = content[0]
-        content.body = JSON.parse(content.body)
-        delete content.body.audio
-        delete content.body.cue_points
-        delete content.body.cue_points_json
-        delete content.body.frame_preview
-        delete content.body.closed_caption
+        content.body = content.sanitized_body
+          ? JSON.parse(content.sanitized_body)
+          : JSON.parse(content.body)
+        if (content.body) {
+          delete content.body.audio
+          delete content.body.cue_points
+          delete content.body.cue_points_json
+          delete content.body.frame_preview
+          delete content.body.closed_caption
+        }
 
         content.body.episode.wweid = content.wweid
         content.body.episode.wweidSource = "content_versions"
