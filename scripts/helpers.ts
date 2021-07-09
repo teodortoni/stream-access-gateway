@@ -1,5 +1,5 @@
 import * as crypto from "crypto"
-import { InternalServerErrorException } from "@nestjs/common"
+import { BadRequestException } from "@nestjs/common"
 import configs from "../config/defaultconfigs"
 
 export const generatePublicPrivateKeyPair = async (secret: string): Promise<object> => {
@@ -18,11 +18,8 @@ export const generatePublicPrivateKeyPair = async (secret: string): Promise<obje
       }
     })
   } catch (error) {
-    this.logger.debug(
-      `Method: generatePublicPrivateKeyPair, error code: ${error.code}`,
-      error.stack
-    )
-    throw new InternalServerErrorException()
+    console.error("Method: generatePublicPrivateKeyPair, error:", error)
+    throw new BadRequestException()
   }
 }
 
@@ -31,8 +28,8 @@ export const generateHmacSignature = async (secret: string): Promise<string> => 
     const hmac = crypto.createHmac(configs().app.crypto.hmac.algorithm, secret)
     return hmac.digest("hex")
   } catch (error) {
-    this.logger.debug(`Method: generateHmacSignature, error code: ${error.code}`, error.stack)
-    throw new InternalServerErrorException()
+    console.error("Method: generateHmacSignature, error:", error)
+    throw new BadRequestException()
   }
 }
 
