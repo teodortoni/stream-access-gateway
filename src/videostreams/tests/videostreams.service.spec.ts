@@ -1,6 +1,10 @@
 import { Test } from "@nestjs/testing"
 import { VideostreamsService } from "../videostreams.service"
 import { VideoStreamsRepository } from "../videostreams.repository"
+import { LivevideostreamsService } from "../livevideostreams/livevideostreams.service"
+import { LiveVideoStreamsRepository } from "../livevideostreams/livevideostreams.repository"
+import { FreighterS3 } from "../../../scripts/FreighterS3"
+import { FreighterService } from "../../freighter/freighter.service"
 import {
   HttpService,
   InternalServerErrorException,
@@ -10,6 +14,10 @@ import {
 import { ConfigService } from "@nestjs/config"
 import { VideoStreamParams } from "../dto/video-streams-params.dto"
 import * as EdgeAuth from "akamai-edgeauth"
+import { FreighterRepository } from "../../freighter/freighter.repository"
+import { getRepositoryToken } from "@nestjs/typeorm"
+import { freighterdbOrmConfig } from "../../../config/freighterdb.config"
+import mockFreighterGetContent from "../../freighter/tests/mockFreighterGetContent"
 
 jest.mock("akamai-edgeauth", () => {
   return jest.fn().mockImplementation(() => {
@@ -28,12 +36,25 @@ jest.mock("akamai-edgeauth", () => {
 })
 
 describe("Video Streams Service", () => {
-  let videoStreamsService: VideostreamsService,
+  let freighterRepository: FreighterRepository,
+    videoStreamsService: VideostreamsService,
     videoStreamsRepo: VideoStreamsRepository,
+    liveVideoStreamService: LivevideostreamsService,
+    liveVideoStreamRepo: LiveVideoStreamsRepository,
+    freighterS3: FreighterS3,
+    freighterService: FreighterService,
     httpService: HttpService
 
   const mockVideoStreamsRepo = () => ({
     store: jest.fn()
+  })
+
+  const mockLiveVideoStreamsRepo = () => ({
+    store: jest.fn()
+  })
+
+  const mockFreighterRepo = () => ({
+    query: jest.fn()
   })
 
   const httpServiceGetData = {
@@ -76,6 +97,8 @@ describe("Video Streams Service", () => {
       switch (key) {
         case "videoStreams.encryptionKey":
           return "acf7eae71cb9f7263c4c5fe0f643c7f7"
+        case "videoStreams.hostName":
+          return "vod.sonyliv.wwe.com"
 
         default:
           break
@@ -84,7 +107,7 @@ describe("Video Streams Service", () => {
   })
 
   const videoStreamParams: VideoStreamParams = {
-    videoId: "ee7d26cd-e319-428f-b067-ee7d40c9f767",
+    videoId: "48b634bb-296f-a04e-a914-0d4ac6f58a45",
     format: "m3u8",
     partner: {
       clientId: "testClientId",
@@ -106,12 +129,23 @@ describe("Video Streams Service", () => {
         EdgeAuth,
         { provide: ConfigService, useFactory: mockConfigService },
         VideostreamsService,
+        LivevideostreamsService,
+        FreighterS3,
+        FreighterService,
+        {
+          provide: getRepositoryToken(FreighterRepository, freighterdbOrmConfig.name),
+          useValue: mockFreighterRepo()
+        },
         { provide: HttpService, useFactory: mockHttpService },
-        { provide: VideoStreamsRepository, useFactory: mockVideoStreamsRepo }
+        { provide: VideoStreamsRepository, useFactory: mockVideoStreamsRepo },
+        { provide: LiveVideoStreamsRepository, useFactory: mockLiveVideoStreamsRepo }
       ]
     }).compile()
 
     videoStreamsService = await module.get<VideostreamsService>(VideostreamsService)
+    liveVideoStreamService = await module.get<LivevideostreamsService>(LivevideostreamsService)
+    freighterS3 = await module.get<FreighterS3>(FreighterS3)
+    freighterService = await module.get<FreighterService>(FreighterService)
     videoStreamsRepo = await module.get<VideoStreamsRepository>(VideoStreamsRepository)
     httpService = await module.get<HttpService>(HttpService)
   })
@@ -125,113 +159,174 @@ describe("Video Streams Service", () => {
 
   describe("getVideoStream", () => {
     it("Get videoStream successfully", async () => {
-      const mockHttpServiceGet = {
-        toPromise: () => Promise.resolve(httpServiceGetData)
-      }
-      httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
-      // console.log("test HttpService: ", httpService)
+      freighterService.getContent = jest.fn().mockImplementationOnce(() => mockFreighterGetContent)
       const result = await videoStreamsService.setParams(videoStreamParams).getVideoStream()
       expect(result).toMatchObject({
-        duration: "05:19:37",
-        id: "ee7d26cd-e319-428f-b067-ee7d40c9f767",
+        duration: "02:36:15",
+        id: "48b634bb-296f-a04e-a914-0d4ac6f58a45",
         // manifestUrl:
         //   "https://vod-test.sonyliv.wwe.com/e/ee7d26cd_e319_428f_b067_ee7d40c9f767/hls/ee7d26cd_e319_428f_b067_ee7d40c9f767.m3u8?hdnts=exp=1599133908~acl=/*~hmac=53ce795bb3a29e0d432303aa8897ebfa6697653c8b7e327769c4043310464662",
         manifestUrl:
-          "https://vod-test.sonyliv.wwe.com/e/ee7d26cd-e319-428f-b067-ee7d40c9f767/hls/nxt34_ntwk.m3u8?hdnts=exp=1599133908~acl=/*~hmac=53ce795bb3a29e0d432303aa8897ebfa6697653c8b7e327769c4043310464662",
+          "https://vod.sonyliv.wwe.com/4/48b634bb_296f_a04e_a914_0d4ac6f58a45/hls/48b634bb_296f_a04e_a914_0d4ac6f58a45.m3u8?hdnts=exp=1599133908~acl=/*~hmac=53ce795bb3a29e0d432303aa8897ebfa6697653c8b7e327769c4043310464662",
         name: [
           {
-            extra_long: "WrestleMania 35",
+            long: "King of the Ring 1998",
+            short: "King of the Ring",
+            medium: "King of the Ring 1998",
             language: "en",
-            long: "WrestleMania 35",
-            medium: "WrestleMania 35",
-            short: "WrestleMania 35"
+            extra_long: "King of the Ring"
           }
         ],
-        rating: "TV-PG",
+        rating: "TV-14",
         synopsis: [
           {
-            language: "en",
-            long: "testLongSynopsis",
-            short: "testShortSynopsis"
+            long:
+              '"Stone Cold" Steve Austin puts the WWE Championship on the line against the demonic Kane in a brutal First Blood Match. The Undertaker and Mankind make history inside Hell in a Cell. Semi-Final matches to crown the WWE King of the Ring include Ken Shamrock vs. Jeff Jarrett and The Rock vs. Dan Severn. X-Pac battles Owen Hart.',
+            short:
+              "Steve Austin defends WWE Championship against Kane in a First Blood match. Undertaker and Mankind make history inside Hell in a Cell.",
+            language: "en"
           }
         ]
       })
     })
 
-    it("Get videoStream failes to set content", () => {
-      const mockHttpServiceGet = {
+    it("Get videoStream could not find content", async () => {
+      freighterService.getContent = jest.fn().mockResolvedValue({})
+      await expect(
+        videoStreamsService.setParams(videoStreamParams).getVideoStream()
+      ).rejects.toThrow(
+        new NotFoundException(`Could not find a record given the ID: ${videoStreamParams.videoId}`)
+      )
+    })
+
+    it("Get videoStream failes to set content", async () => {
+      freighterService.getContent = jest.fn().mockImplementationOnce(() => {
         toPromise: () =>
-          Promise.reject(new NotFoundException({ status: 404, data: { message: "Not available" } }))
-      }
-      httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
-      videoStreamParams.videoId = null
-      expect(videoStreamsService.setParams(videoStreamParams).getVideoStream()).rejects.toThrow(
-        new InternalServerErrorException()
+          Promise.reject(
+            new NotFoundException({
+              status: 404,
+              data: {
+                message: "Not available"
+              }
+            })
+          )
+      })
+      await expect(
+        videoStreamsService.setParams(videoStreamParams).getVideoStream()
+      ).rejects.toThrow(
+        new NotFoundException(`Could not find a record given the ID: ${videoStreamParams.videoId}`)
       )
     })
 
-    it("Get videoStream failes to set content path", () => {
-      const mockHttpServiceGet = {
-        toPromise: () => Promise.resolve(httpServiceGetData)
-      }
-      httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
-      videoStreamParams.videoId = null
-      expect(videoStreamsService.setParams(videoStreamParams).getVideoStream()).rejects.toThrow(
-        new InternalServerErrorException()
+    it("Get videoStream failes to set content path", async () => {
+      const setManifestUrlSpy = jest
+        .spyOn(VideostreamsService.prototype as any, "setManifestUrl")
+        .mockImplementationOnce(() => Promise.reject())
+      freighterService.getContent = jest.fn().mockImplementationOnce(() => mockFreighterGetContent)
+      expect(setManifestUrlSpy).not.toHaveBeenCalled()
+      await expect(
+        videoStreamsService.setParams(videoStreamParams).getVideoStream()
+      ).rejects.toThrow(
+        new NotFoundException(`Could not find a record given the ID: ${videoStreamParams.videoId}`)
       )
+      expect(setManifestUrlSpy).toHaveBeenCalled()
     })
 
-    it("Get videoStream failes to set manifest url", () => {
-      const mockHttpServiceGet = {
-        // toPromise: () => Promise.resolve(httpServiceGetData)
-        toPromise: () => Promise.reject(new UnauthorizedException())
-      }
-      httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
-      const testManifestUrlSpy = jest.spyOn(VideostreamsService.prototype as any, "testManifestUrl")
-      console.log(testManifestUrlSpy)
-      expect(testManifestUrlSpy).not.toHaveBeenCalled()
-      videoStreamParams.videoId = null
-      expect(videoStreamsService.setParams(videoStreamParams).getVideoStream()).rejects.toThrow(
-        new InternalServerErrorException()
-      )
+    it("Get videoStream failes to set manifest url", async () => {
+      const setVideoStreamSpy = jest
+        .spyOn(VideostreamsService.prototype as any, "setVideoStream")
+        .mockImplementationOnce(() => Promise.reject())
+      freighterService.getContent = jest.fn().mockImplementationOnce(() => mockFreighterGetContent)
+      expect(setVideoStreamSpy).not.toHaveBeenCalled()
+      await expect(
+        videoStreamsService.setParams(videoStreamParams).getVideoStream()
+      ).rejects.toThrow()
+      expect(setVideoStreamSpy).toHaveBeenCalled()
     })
 
-    it("Get videoStream failes to set video stream", () => {
-      videoStreamParams.videoId = videoId
-      delete httpServiceGetData.data.data.episode
-      const mockHttpServiceGet = {
-        toPromise: () => Promise.resolve(httpServiceGetData)
-      }
-      httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
-      expect(videoStreamsService.setParams(videoStreamParams).getVideoStream()).rejects.toThrow(
-        new InternalServerErrorException()
+    it("Get videoStream set content paths for json format", async () => {
+      freighterService.getContent = jest.fn().mockImplementationOnce(() => mockFreighterGetContent)
+      videoStreamParams.format = "json"
+      await expect(
+        videoStreamsService.setParams(videoStreamParams).getVideoStream()
+      ).rejects.toThrow(
+        new NotFoundException(`Could not find a record given the ID: ${videoStreamParams.videoId}`)
       )
+      videoStreamParams.format = "m3u8"
     })
 
-    it("Get videoStream failes to get duration while setting video stream", () => {
-      videoStreamParams.videoId = videoId
-      delete httpServiceGetData.data.data.duration
-      httpServiceGetData.data.data.episode = episode
-      const mockHttpServiceGet = {
-        toPromise: () => Promise.resolve(httpServiceGetData)
-      }
-      httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
-      expect(videoStreamsService.setParams(videoStreamParams).getVideoStream()).rejects.toThrow(
-        new InternalServerErrorException()
+    it("Get videoStream set content paths for live format", async () => {
+      freighterService.getContent = jest.fn().mockImplementationOnce(() => mockFreighterGetContent)
+      videoStreamParams.format = "live"
+      await expect(
+        videoStreamsService.setParams(videoStreamParams).getVideoStream()
+      ).rejects.toThrow(
+        new NotFoundException(`Could not find a record given the ID: ${videoStreamParams.videoId}`)
       )
+      videoStreamParams.format = "m3u8"
     })
 
-    it("Get videoStream failes to store video stream in database", () => {
-      videoStreamParams.videoId = videoId
-      httpServiceGetData.data.data.duration = duration
-      const mockHttpServiceGet = {
-        toPromise: () => Promise.resolve(httpServiceGetData)
-      }
-      httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
-      videoStreamsRepo.store = jest.fn().mockRejectedValue(Error)
-      expect(videoStreamsService.setParams(videoStreamParams).getVideoStream()).rejects.toThrow(
-        new InternalServerErrorException()
-      )
+    it("Get videoStream fails to get tokenized url by format", async () => {
+      const testManifestUrlRequestSpy = jest
+        .spyOn(VideostreamsService.prototype as any, "testManifestUrlRequest")
+        .mockImplementationOnce(() => Promise.reject())
+      freighterService.getContent = jest.fn().mockImplementationOnce(() => mockFreighterGetContent)
+      expect(testManifestUrlRequestSpy).not.toHaveBeenCalled()
+      videoStreamParams.format = "json"
+      await expect(
+        videoStreamsService.setParams(videoStreamParams).getVideoStream()
+      ).rejects.toThrow()
+      expect(testManifestUrlRequestSpy).toHaveBeenCalled()
+      videoStreamParams.format = "m3u8"
+    })
+
+    it("Get videoStream fails to get manifest url string", async () => {
+      freighterService.getContent = jest.fn().mockImplementationOnce(() => mockFreighterGetContent)
+      const testManifestUrlRequestSpy = jest
+        .spyOn(VideostreamsService.prototype as any, "testManifestUrlRequest")
+        .mockImplementationOnce(() => Promise.reject())
+      await expect(
+        videoStreamsService.setParams(videoStreamParams).getVideoStream()
+      ).rejects.toThrow()
+      expect(testManifestUrlRequestSpy).toHaveBeenCalled()
+    })
+
+    it("Get videoStream failes to set video stream", async () => {
+      const storeVideoStreamSpy = jest
+        .spyOn(VideostreamsService.prototype as any, "storeVideoStream")
+        .mockImplementationOnce(() => Promise.reject())
+      freighterService.getContent = jest.fn().mockImplementationOnce(() => mockFreighterGetContent)
+      expect(storeVideoStreamSpy).not.toHaveBeenCalled()
+      await expect(
+        videoStreamsService.setParams(videoStreamParams).getVideoStream()
+      ).rejects.toThrow()
+      expect(storeVideoStreamSpy).toHaveBeenCalled()
+    })
+
+    it("Get videoStream failes to get duration while setting video stream", async () => {
+      const durationSpy = jest.spyOn(VideostreamsService.prototype as any, "duration")
+      const duration = mockFreighterGetContent.duration
+      const bodyDuration = mockFreighterGetContent.body.duration
+      delete mockFreighterGetContent.duration
+      delete mockFreighterGetContent.body.duration
+      freighterService.getContent = jest.fn().mockImplementationOnce(() => mockFreighterGetContent)
+      expect(durationSpy).not.toHaveBeenCalled()
+      await expect(
+        videoStreamsService.setParams(videoStreamParams).getVideoStream()
+      ).rejects.toThrow()
+      expect(durationSpy).toHaveBeenCalled()
+      mockFreighterGetContent.duration = duration
+      mockFreighterGetContent.body.duration = bodyDuration
+    })
+
+    it("Get videoStream failes to store video stream in database", async () => {
+      videoStreamsRepo.store = jest.fn(() => Promise.reject())
+      freighterService.getContent = jest.fn().mockImplementationOnce(() => mockFreighterGetContent)
+      expect(videoStreamsRepo.store).not.toHaveBeenCalled()
+      await expect(
+        videoStreamsService.setParams(videoStreamParams).getVideoStream()
+      ).rejects.toThrow()
+      expect(videoStreamsRepo.store).toHaveBeenCalled()
     })
   })
 })

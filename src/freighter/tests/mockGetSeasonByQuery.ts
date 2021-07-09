@@ -1,0 +1,40 @@
+export default [
+  {
+    id: 33785,
+    delivery_type: "season",
+    production_id: "Backlash-2021_2714",
+    path: "series/B/Backlash_198/Backlash-2021_2714/Backlash-2021_2714.json",
+    video_type: "",
+    published: 1,
+    enabled: 1,
+    release_date: null,
+    sunset_date: null,
+    ads_enabled: null,
+    availability: null,
+    duration: null,
+    video: null,
+    wweid: "05c45774-e370-496f-b307-bee3447e3ca5",
+    cv_wweid: "05c45774-e370-496f-b307-bee3447e3ca5",
+    wweid_source: "season",
+    networkid: null,
+    fmpid: null,
+    metroid: null,
+    name: null,
+    synopsis: null,
+    premiere_date: null,
+    rating: null,
+    partner_ids: '{"axis": 163394, "dice": null}',
+    watch_path: "/in-ring/Backlash-8518",
+    image_keys: null,
+    images: "{}",
+    body:
+      '{"tag": {}, "season": {"name": [{"name": "Backlash - 2021", "language": "en"}], "year": 2021, "image": [], "wweid": "05c45774-e370-496f-b307-bee3447e3ca5", "number": 2021, "series": {"wweid": "f04032bc-ba78-11e7-871e-0ec1498482d4"}, "version": "1.0.0", "revision": "freighter.season.1", "sequence": 16, "synopsis": [{"long": "-1", "short": "-1", "language": "en"}], "programminag_block": 30}}',
+    sanitized_body:
+      '{"tag": {}, "season": {"name": [{"name": "Backlash - 2021", "language": "en"}], "year": 2021, "image": [], "wweid": "05c45774-e370-496f-b307-bee3447e3ca5", "number": 2021, "series": {"wweid": "f04032bc-ba78-11e7-871e-0ec1498482d4"}, "version": "1.0.0", "revision": "freighter.season.1", "sequence": 16, "synopsis": [{"long": "-1", "short": "-1", "language": "en"}], "programminag_block": 30}}',
+    md5: "ce25863a9b88e071bb8e29585ac01960",
+    created_at: "2021-05-17T06:19:24.000Z",
+    updated_at: "2021-04-26T21:52:54.000Z",
+    cached_at: "2021-05-17T06:19:24.000Z",
+    deleted_at: null
+  }
+]

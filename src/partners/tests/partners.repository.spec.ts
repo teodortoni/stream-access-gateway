@@ -1,126 +1,157 @@
-import { Test } from "@nestjs/testing";
-import { PartnersRepository } from "../partners.repository";
-import { v4 as uuid } from "uuid";
-import * as bcrypt from "bcryptjs";
-import { ConflictException, InternalServerErrorException } from "@nestjs/common";
-import { ApplicationsService } from "../../applications/applications.service";
-import { CredentialsService } from "../../credentials/credentials.service";
-import { EncryptionKeypairService } from "../../encryptionkeypair/encryptionkeypair.service";
+import { Test } from "@nestjs/testing"
+import { PartnersRepository } from "../partners.repository"
+import { v4 as uuid } from "uuid"
+import * as bcrypt from "bcryptjs"
+import { ConflictException, InternalServerErrorException } from "@nestjs/common"
+import { ApplicationsService } from "../../applications/applications.service"
+import { CredentialsService } from "../../credentials/credentials.service"
+import { EncryptionKeypairService } from "../../encryptionkeypair/encryptionkeypair.service"
 
 // Mocks the uuid() methood to generate clientId
-jest.mock('uuid');
+jest.mock("uuid")
 
-describe('PartnersRepository', () => {
-    let partnersRepository, applicationsService, credentialsService, encryptionKeypairService, salt;
+describe("PartnersRepository", () => {
+  let partnersRepository, applicationsService, credentialsService, encryptionKeypairService, salt
 
-    const mockAuthCredentialsDto = {
-        clientName: 'testClientName',
-        clientApplicationName: 'testApplicationName',
-        scopes: 'test_scope_get',
-    };
+  const mockAuthCredentialsDto = {
+    clientName: "testClientName",
+    clientApplicationName: "testApplicationName",
+    scopes: "test_scope_get"
+  }
 
-    const mockApplicationsService = () => ({
-        createApplication: jest.fn()
-    });
+  const mockApplicationsService = () => ({
+    createApplication: jest.fn()
+  })
 
-    const mockCredentialsService = () => ({
-        createCredentials: jest.fn()
-    });
+  const mockCredentialsService = () => ({
+    createCredentials: jest.fn()
+  })
 
-    const mockEncryptionKeypairService = () => ({
-        createKeypair: jest.fn()
-    });
+  const mockEncryptionKeypairService = () => ({
+    createKeypair: jest.fn()
+  })
+
+  beforeEach(async () => {
+    const module = await Test.createTestingModule({
+      providers: [
+        PartnersRepository,
+        { provide: ApplicationsService, useFactory: mockApplicationsService },
+        { provide: CredentialsService, useFactory: mockCredentialsService },
+        { provide: EncryptionKeypairService, useFactory: mockEncryptionKeypairService }
+      ]
+    }).compile()
+
+    partnersRepository = await module.get<PartnersRepository>(PartnersRepository)
+    applicationsService = await module.get<ApplicationsService>(ApplicationsService)
+    credentialsService = await module.get<CredentialsService>(CredentialsService)
+    encryptionKeypairService = await module.get<EncryptionKeypairService>(EncryptionKeypairService)
+
+    salt = await bcrypt.genSalt()
+  })
+
+  describe("hashedPassword", () => {
+    it("Generate hashed password", async () => {
+      bcrypt.hash = jest.fn().mockResolvedValue("testhash")
+      expect(bcrypt.hash).not.toHaveBeenCalled()
+      const result = await partnersRepository.hashedPassword("testpassword", salt)
+      expect(bcrypt.hash).toHaveBeenCalledWith("testpassword", salt)
+      expect(result).toEqual("testhash")
+    })
+  })
+
+  describe("register", () => {
+    let save, clientId, applicationId, clientSecret, encryptionPublicKey, hash
 
     beforeEach(async () => {
-        const module = await Test.createTestingModule({
-            providers: [
-                PartnersRepository,
-                { provide: ApplicationsService, useFactory: mockApplicationsService },
-                { provide: CredentialsService, useFactory: mockCredentialsService },
-                { provide: EncryptionKeypairService, useFactory: mockEncryptionKeypairService },
-            ]
-        }).compile();
+      // Mock variables
+      clientId = "testClientUuid"
+      applicationId = "testApplicationUuid"
+      clientSecret = "testClientSecret"
+      encryptionPublicKey = "testEncryptionPublicKey"
 
-        partnersRepository = await module.get<PartnersRepository>(PartnersRepository);
-        applicationsService = await module.get<ApplicationsService>(ApplicationsService);
-        credentialsService = await module.get<CredentialsService>(CredentialsService);
-        encryptionKeypairService = await module.get<EncryptionKeypairService>(EncryptionKeypairService);
+      save = jest.fn()
+      partnersRepository.create = jest.fn().mockReturnValue({ clientId, save })
 
-        salt = await bcrypt.genSalt();
-    });
+      // Mock generation of clientId
+      uuid.mockReturnValue(clientId)
 
-    describe('hashedPassword', () => {
-        it('Generate hashed password', async () => {
-            bcrypt.hash = jest.fn().mockResolvedValue('testhash');
-            expect(bcrypt.hash).not.toHaveBeenCalled();
-            const result = await partnersRepository.hashedPassword('testpassword', salt);
-            expect(bcrypt.hash).toHaveBeenCalledWith('testpassword', salt);
-            expect(result).toEqual('testhash');
-        });
-    });
+      // Mock hashedPassword
+      partnersRepository.hashedPassword = jest.fn().mockResolvedValue(hash)
+    })
 
-    describe('register', () => {
-        let save, clientId, applicationId, clientSecret, encryptionPublicKey, hash;
+    it("Partner and application with scopes was successful", async () => {
+      // Mock partners entity save method
+      save.mockResolvedValue(true)
 
-        beforeEach(async () => {
-            // Mock variables
-            clientId = 'testClientUuid';
-            applicationId = 'testApplicationUuid';
-            clientSecret = 'testClientSecret';
-            encryptionPublicKey = 'testEncryptionPublicKey';
+      // Mock createApplication method of applicationsService
+      applicationsService.createApplication.mockResolvedValue({ id: applicationId })
 
-            save = jest.fn();
-            partnersRepository.create = jest.fn().mockReturnValue({ clientId, save });
+      // Mock createCredentials method of credentialsService
+      credentialsService.createCredentials.mockResolvedValue({ privateKey: clientSecret })
 
-            // Mock generation of clientId
-            uuid.mockReturnValue(clientId);
-            
-            // Mock hashedPassword
-            partnersRepository.hashedPassword = jest.fn().mockResolvedValue(hash);
-        });
+      // Mock createKeypair method of encryptionKeypairService
+      encryptionKeypairService.createKeypair.mockResolvedValue({ publicKey: encryptionPublicKey })
 
-        it('Partner and application with scopes was successful', async () => {
-            // Mock partners entity save method
-            save.mockResolvedValue(true);
+      expect(applicationsService.createApplication).not.toHaveBeenCalled()
+      expect(credentialsService.createCredentials).not.toHaveBeenCalled()
+      expect(encryptionKeypairService.createKeypair).not.toHaveBeenCalled()
+      const result = await partnersRepository.register(
+        mockAuthCredentialsDto,
+        applicationsService,
+        credentialsService,
+        encryptionKeypairService
+      )
+      expect(applicationsService.createApplication).toHaveBeenCalled()
+      expect(credentialsService.createCredentials).toHaveBeenCalled()
+      expect(encryptionKeypairService.createKeypair).toHaveBeenCalled()
+      expect(result).toMatchObject({
+        clientId,
+        applicationId,
+        clientSecret,
+        encryptionPublicKey
+      })
+    })
 
-            // Mock createApplication method of applicationsService
-            applicationsService.createApplication.mockResolvedValue({ id: applicationId });
+    it("Partner and application with scopes failed because of partner name conflict", () => {
+      // Mock partners entity save method
+      save.mockRejectedValue({ code: "ER_DUP_ENTRY" })
+      expect(partnersRepository.register(mockAuthCredentialsDto)).rejects.toThrow(
+        new ConflictException("Partner name entered is already taken.")
+      )
+    })
 
-            // Mock createCredentials method of credentialsService
-            credentialsService.createCredentials.mockResolvedValue({ privateKey: clientSecret });
+    it("Partner and application with scopes failed with InternalServerErrorException", () => {
+      save.mockRejectedValue({ code: "any" })
+      expect(partnersRepository.register(mockAuthCredentialsDto)).rejects.toThrow(
+        new InternalServerErrorException()
+      )
+    })
+  })
 
-            // Mock createKeypair method of encryptionKeypairService
-            encryptionKeypairService.createKeypair.mockResolvedValue({ publicKey: encryptionPublicKey });
+  describe("getAll", () => {
+    it("Retrieve all partners", async () => {
+      const mockAllPartners = [
+        {
+          clientId: "f6ae7cbf-52eb-414b-95fa-5d81e949e2f8",
+          name: "TestPartner",
+          secret: "$2a$10$zq6pbjqcGY8Qem9jQlTmme",
+          revokedAt: null,
+          createdAt: "2021-06-30T21:35:50.807Z",
+          updatedAt: "2021-06-30T21:35:50.807Z"
+        }
+      ]
+      partnersRepository.getAll = jest.fn().mockResolvedValue(mockAllPartners)
+      expect(partnersRepository.getAll).not.toHaveBeenCalled()
+      const result = await partnersRepository.getAll()
+      expect(partnersRepository.getAll).toHaveBeenCalled()
+      expect(result).toMatchObject(mockAllPartners)
+    })
 
-            expect(applicationsService.createApplication).not.toHaveBeenCalled();
-            expect(credentialsService.createCredentials).not.toHaveBeenCalled();
-            expect(encryptionKeypairService.createKeypair).not.toHaveBeenCalled();
-            const result = await partnersRepository.register(
-                mockAuthCredentialsDto,
-                applicationsService,
-                credentialsService,
-                encryptionKeypairService
-            );
-            expect(applicationsService.createApplication).toHaveBeenCalled();
-            expect(credentialsService.createCredentials).toHaveBeenCalled();
-            expect(encryptionKeypairService.createKeypair).toHaveBeenCalled();
-            expect(result).toMatchObject({
-                clientId,
-                applicationId,
-                clientSecret,
-                encryptionPublicKey
-            });
-        });
-
-        it('Partner and application with scopes failed because of partner name conflict', () => {
-            // Mock partners entity save method
-            save.mockRejectedValue({ code: 'ER_DUP_ENTRY' });
-            expect(partnersRepository.register(mockAuthCredentialsDto)).rejects.toThrow(new ConflictException('Partner name entered is already taken.'));
-        });
-
-        it('Partner and application with scopes failed with InternalServerErrorException', () => {
-            save.mockRejectedValue({ code: 'any' });
-            expect(partnersRepository.register(mockAuthCredentialsDto)).rejects.toThrow(new InternalServerErrorException);
-        });
-    });
-});
+    it("Retrieve all partners fails with InternalServerErrorException", async () => {
+      partnersRepository.find = jest.fn().mockRejectedValueOnce(new InternalServerErrorException())
+      expect(partnersRepository.find).not.toHaveBeenCalled()
+      expect(partnersRepository.getAll()).rejects.toThrow(new InternalServerErrorException())
+      expect(partnersRepository.find).toHaveBeenCalled()
+    })
+  })
+})
