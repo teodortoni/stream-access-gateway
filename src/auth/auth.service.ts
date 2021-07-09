@@ -1,16 +1,16 @@
 import { Injectable, UnauthorizedException, Logger } from "@nestjs/common"
 import { JwtService } from "@nestjs/jwt"
-import { PartnersRepository } from "src/partners/partners.repository"
-import { CredentialsRepository } from "src/credentials/credentials.repository"
+import { PartnersRepository } from "../partners/partners.repository"
+import { CredentialsRepository } from "../credentials/credentials.repository"
 import { InjectRepository } from "@nestjs/typeorm"
 import * as jwt from "jsonwebtoken"
 import { Connection } from "typeorm"
 import { ReplicatePartnerJwtDto } from "./dto/replicate-partner-jwt.dto"
-import { ApplicationRepository } from "src/applications/application.repository"
-import { AccessTokenService } from "src/access-token/access-token.service"
-import { AccessTokenDataDto } from "src/access-token/dto/access-token.data.dto"
+import { ApplicationRepository } from "../applications/application.repository"
+import { AccessTokenService } from "../access-token/access-token.service"
+import { AccessTokenDataDto } from "../access-token/dto/access-token.data.dto"
 import { ConfigService } from "@nestjs/config"
-import { EncryptionKeypairRepository } from "src/encryptionkeypair/encryptionkeypair.repository"
+import { EncryptionKeypairRepository } from "../encryptionkeypair/encryptionkeypair.repository"
 
 @Injectable()
 export class AuthService {

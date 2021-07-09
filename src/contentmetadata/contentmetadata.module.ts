@@ -1,6 +1,6 @@
 import { Module, HttpModule } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { freighterdbOrmConfig } from "config/freighterdb.config"
+import { freighterdbOrmConfig } from "../../config/freighterdb.config"
 import { FreighterS3 } from "../../scripts/FreighterS3"
 import { FreighterRepository } from "../freighter/freighter.repository"
 import { FreighterService } from "../freighter/freighter.service"

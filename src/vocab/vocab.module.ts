@@ -5,7 +5,7 @@ import { FreighterService } from "../freighter/freighter.service"
 import { FreighterS3 } from "../../scripts/FreighterS3"
 import { FreighterRepository } from "../freighter/freighter.repository"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { freighterdbOrmConfig } from "config/freighterdb.config"
+import { freighterdbOrmConfig } from "../../config/freighterdb.config"
 
 @Module({
   imports: [HttpModule, TypeOrmModule.forFeature([FreighterRepository], freighterdbOrmConfig.name)],

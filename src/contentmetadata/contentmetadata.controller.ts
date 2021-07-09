@@ -2,7 +2,7 @@ import { Controller, Param, Get, UseGuards, ParseUUIDPipe } from "@nestjs/common
 import { ContentmetadataService } from "./contentmetadata.service"
 import { AxiosResponse } from "axios"
 import { AuthGuard } from "@nestjs/passport"
-import { Scope } from "src/scopes/scopes.decorator"
+import { Scope } from "../scopes/scopes.decorator"
 
 @Controller("v1")
 export class ContentmetadataController {

@@ -45,14 +45,12 @@ describe("Access Token Repository", () => {
       expect(accessTokenRepository.generateSignature).not.toHaveBeenCalled()
       const result = await accessTokenRepository.createAccessToken(accessTokenDataDto)
       expect(accessTokenRepository.generateSignature).toHaveBeenCalled()
-      expect(result).toMatchObject({
-        clientId: "testClientUuid",
-        applicationId: "testApplicationUuid",
-        credentialsId: "testCredentialsUuid",
-        signature: "testSignature",
-        expiresAt: expiresAt(2630000),
-        expiresIn: 2630000
-      })
+      expect(result).toHaveProperty("clientId")
+      expect(result).toHaveProperty("applicationId")
+      expect(result).toHaveProperty("credentialsId")
+      expect(result).toHaveProperty("signature")
+      expect(result).toHaveProperty("expiresAt")
+      expect(result).toHaveProperty("expiresIn")
     })
 
     it("Access Token failed with InternalServerErrorException", () => {

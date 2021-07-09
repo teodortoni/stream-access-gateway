@@ -5,8 +5,8 @@ import { PartnerApplicationRegisterData } from "./dto/partner-application-regist
 import { ApplicationsService } from "../applications/applications.service"
 import { CredentialsService } from "../credentials/credentials.service"
 import { EncryptionKeypairService } from "../encryptionkeypair/encryptionkeypair.service"
-import { Partners } from "src/entities/partners.entity"
-import { Applications } from "src/entities/applications.entity"
+import { Partners } from "../entities/partners.entity"
+import { Applications } from "../entities/applications.entity"
 
 @Injectable()
 export class PartnersService {

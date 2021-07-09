@@ -2,9 +2,9 @@ import { ExtractJwt, Strategy } from "passport-jwt"
 import { PassportStrategy } from "@nestjs/passport"
 import { Injectable, UnauthorizedException, Logger } from "@nestjs/common"
 import * as jwt from "jsonwebtoken"
-import { CredentialsRepository } from "src/credentials/credentials.repository"
+import { CredentialsRepository } from "../credentials/credentials.repository"
 import { Connection } from "typeorm"
-import { EncryptionKeypairRepository } from "src/encryptionkeypair/encryptionkeypair.repository"
+import { EncryptionKeypairRepository } from "../encryptionkeypair/encryptionkeypair.repository"
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {

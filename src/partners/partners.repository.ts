@@ -3,12 +3,12 @@ import * as bcrypt from "bcryptjs"
 import { InternalServerErrorException, Logger, ConflictException } from "@nestjs/common"
 import { PartnerApplicationRegisterData } from "./dto/partner-application-register.data.dto"
 import { Partners } from "../entities/partners.entity"
-import { ApplicationDataDto } from "src/applications/dto/application-data.dto"
+import { ApplicationDataDto } from "../applications/dto/application-data.dto"
 import { ApplicationsService } from "../applications/applications.service"
-import { CredentialsService } from "src/credentials/credentials.service"
-import { CredentialDataDto } from "src/credentials/dto/credential-data.dto"
-import { EncryptionKeypairService } from "src/encryptionkeypair/encryptionkeypair.service"
-import { CreateKeypairDataDto } from "src/encryptionkeypair/dto/create-keypair-data.dto"
+import { CredentialsService } from "../credentials/credentials.service"
+import { CredentialDataDto } from "../credentials/dto/credential-data.dto"
+import { EncryptionKeypairService } from "../encryptionkeypair/encryptionkeypair.service"
+import { CreateKeypairDataDto } from "../encryptionkeypair/dto/create-keypair-data.dto"
 
 @EntityRepository(Partners)
 export class PartnersRepository extends Repository<Partners> {

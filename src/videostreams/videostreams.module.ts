@@ -9,7 +9,7 @@ import { LiveVideoStreamsRepository } from "./livevideostreams/livevideostreams.
 import { FreighterService } from "../freighter/freighter.service"
 import { FreighterS3 } from "../../scripts/FreighterS3"
 import { FreighterRepository } from "../freighter/freighter.repository"
-import { freighterdbOrmConfig } from "config/freighterdb.config"
+import { freighterdbOrmConfig } from "../../config/freighterdb.config"
 
 @Module({
   imports: [
