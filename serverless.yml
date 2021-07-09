@@ -2,7 +2,7 @@ service: stream-access-gateway
 
 plugins:
   - serverless-dotenv-plugin
-  - serverless-plugin-datadog
+  # - serverless-plugin-datadog
   - serverless-jetpack
   # Enable warmup on all functions (only for production and staging)
   # - serverless-plugin-warmup
@@ -14,8 +14,8 @@ custom:
   # warmup:
   #   - production
   #   - staging
-  datadog:
-    forwarder: arn:aws:lambda:ap-south-1:228212849651:function:datadog-forwarder-Forwarder-GH3BEQA6509Z
+  # datadog:
+  #   forwarder: arn:aws:lambda:ap-south-1:228212849651:function:datadog-forwarder-Forwarder-GH3BEQA6509Z
 
 provider:
   name: aws
@@ -70,7 +70,7 @@ functions:
   runstream-access-gateway:
     handler: dist/src/lambda.handler
     name: stream-access-gateway-${env:AWS_OWN_STAGE, dev}-${env:AWS_LAMBDA_NAME}
-    # timeout: 12
+    timeout: 12
     events:
       - http:
           path: "/"
