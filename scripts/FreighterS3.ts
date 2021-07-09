@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger, NotFoundException } from "@nestjs/common"
 import { S3 } from "aws-sdk"
 import { ConfigService } from "@nestjs/config"
 
@@ -19,13 +19,9 @@ export class FreighterS3 {
         Bucket: this.configService.get<string>("app.freighter.s3.bucket"),
         Key: location
       }
-      if (this.s3Client === undefined) {
-        this.logger.error("Method: get, Could not get S3 client...")
-        throw new InternalServerErrorException()
-      }
       return await this.s3Client.getObject(params).promise()
     } catch (err) {
-      this.logger.error(`Method: get, File not on S3: ${location}`)
+      this.logger.error(`Method: get, File not on S3: ${location}`, err)
       throw new NotFoundException(`File not on S3: ${location}`)
     }
   }
