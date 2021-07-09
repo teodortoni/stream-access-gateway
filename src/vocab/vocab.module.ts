@@ -1,12 +1,14 @@
 import { Module, HttpModule } from "@nestjs/common"
 import { VocabService } from "./vocab.service"
 import { VocabController } from "./vocab.controller"
-import { FreighterModule } from "src/freighter/freighter.module"
-import { FreighterService } from "src/freighter/freighter.service"
-import { FreighterS3 } from "scripts/FreighterS3"
+import { FreighterService } from "../freighter/freighter.service"
+import { FreighterS3 } from "../../scripts/FreighterS3"
+import { FreighterRepository } from "../freighter/freighter.repository"
+import { TypeOrmModule } from "@nestjs/typeorm"
+import { freighterdbOrmConfig } from "config/freighterdb.config"
 
 @Module({
-  imports: [HttpModule, FreighterModule],
+  imports: [HttpModule, TypeOrmModule.forFeature([FreighterRepository], freighterdbOrmConfig.name)],
   controllers: [VocabController],
   providers: [VocabService, FreighterService, FreighterS3]
 })

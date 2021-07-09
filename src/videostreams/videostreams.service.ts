@@ -11,7 +11,8 @@ import { ConfigService } from "@nestjs/config"
 import { VideoStreamsRepository } from "./videostreams.repository"
 import { LivevideostreamsService } from "./livevideostreams/livevideostreams.service"
 import { expiresAt } from "../../scripts/helpers"
-import { FreighterService } from "src/freighter/freighter.service"
+import { FreighterService } from "../freighter/freighter.service"
+import { VideoStreams } from "src/entities/video-streams.entity"
 
 @Injectable()
 export class VideostreamsService {
@@ -147,7 +148,7 @@ export class VideostreamsService {
         `Method: setContentPath, data: ${JSON.stringify(this.content)}, ${error}`,
         error.stack
       )
-      throw new InternalServerErrorException()
+      throw error
     }
   }
 
@@ -162,7 +163,7 @@ export class VideostreamsService {
         }`,
         error.stack
       )
-      throw new InternalServerErrorException()
+      throw error
     }
   }
 
@@ -184,6 +185,7 @@ export class VideostreamsService {
       }
     } catch (error) {
       this.logger.error(`Method: getManifestUrl, error: `, error)
+      throw error
     }
   }
 
@@ -204,6 +206,7 @@ export class VideostreamsService {
       }
     } catch (error) {
       this.logger.error(`Method: getManifestUrlObject, error: `, error)
+      throw error
     }
   }
 
@@ -220,6 +223,7 @@ export class VideostreamsService {
       )
     } catch (error) {
       this.logger.error(`Method: getTokenizedUrlByFormat, error: `, error)
+      throw error
     }
   }
 
@@ -230,6 +234,7 @@ export class VideostreamsService {
       return await this.testManifestUrlRequest(manifestUrl)
     } catch (error) {
       this.logger.error(`Method: getManifestUrlString, error: `, error)
+      throw error
     }
   }
 
@@ -249,6 +254,7 @@ export class VideostreamsService {
       return manifestUrl
     } catch (error) {
       this.logger.error(`Method: testManifestUrlRequest, error: `, error)
+      throw error
     }
   }
 
@@ -270,11 +276,11 @@ export class VideostreamsService {
         `Method: setVideoStream, data: ${JSON.stringify(this.content)}, error code: ${error.code}`,
         error.stack
       )
-      throw new InternalServerErrorException()
+      throw error
     }
   }
 
-  private async storeVideoStream() {
+  private async storeVideoStream(): Promise<void> {
     try {
       const record = {
         clientId: this.videoStreamParams.partner.clientId,
@@ -307,7 +313,6 @@ export class VideostreamsService {
         })}, error code: ${error.code}`,
         error.stack
       )
-      throw new InternalServerErrorException()
     }
   }
 
@@ -324,7 +329,7 @@ export class VideostreamsService {
         `Method: duration, data: ${JSON.stringify(this.content)}, ${error}`,
         error.stack
       )
-      throw new InternalServerErrorException()
+      throw error
     }
   }
 }

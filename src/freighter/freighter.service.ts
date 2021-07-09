@@ -1,9 +1,10 @@
 import { S3 } from "aws-sdk"
 import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
-import { InjectEntityManager } from "@nestjs/typeorm"
-import { FreighterS3 } from "scripts/FreighterS3"
-import { EntityManager } from "typeorm"
+import { InjectRepository } from "@nestjs/typeorm"
+import { FreighterS3 } from "../../scripts/FreighterS3"
 import { ConfigService } from "@nestjs/config"
+import { FreighterRepository } from "./freighter.repository"
+import { freighterdbOrmConfig } from "../../config/freighterdb.config"
 
 @Injectable()
 export class FreighterService {
@@ -12,7 +13,8 @@ export class FreighterService {
   private content
 
   constructor(
-    @InjectEntityManager("freighterdb") private manager: EntityManager,
+    @InjectRepository(FreighterRepository, freighterdbOrmConfig.name)
+    private repo: FreighterRepository,
     private s3: FreighterS3,
     private configService: ConfigService
   ) {}
@@ -23,7 +25,7 @@ export class FreighterService {
 
       return this.video
     } catch (error) {
-      this.logger.error(`Method: getVideoById, wweid: ${wweid}`, error.stack)
+      this.logger.error(`Method: getVideoById, wweid: ${wweid}`, error)
       throw error
     }
   }
@@ -34,7 +36,7 @@ export class FreighterService {
 
       await this.setVideoContent()
     } catch (error) {
-      this.logger.error(`Method: getVideoContent, wweid: ${wweid}`, error.stack)
+      this.logger.error(`Method: getVideoContent, wweid: ${wweid}`, error)
       throw error
     }
   }
@@ -45,7 +47,7 @@ export class FreighterService {
             JOIN sony_deliveries
             ON sony_deliveries.wweid=network_deliveries.cv_wweid
             WHERE sony_deliveries.wweid="${wweid}"`
-      let content = await this.manager.query(sqlQuery)
+      let content = await this.repo.query(sqlQuery)
       if (content.length > 0 && content !== undefined) {
         content = content[0]
         content.body = content.sanitized_body
@@ -67,7 +69,7 @@ export class FreighterService {
       }
       return null
     } catch (error) {
-      this.logger.error(`Method: getContent, wweid: ${wweid}`, error.stack)
+      this.logger.error(`Method: getContent, wweid: ${wweid}`, error)
       throw new NotFoundException(`Could not find a record given the ID: ${wweid}`)
     }
   }
@@ -97,7 +99,7 @@ export class FreighterService {
         this.video["companion"] = this.content.body.companion
       }
     } catch (error) {
-      this.logger.error(`Method: setVideoContent, content: ${this.content}`, error.stack)
+      this.logger.error(`Method: setVideoContent, content: ${this.content}`, error)
       throw error.status === 404
         ? error
         : new NotFoundException(`Could not find a record given the ID: ${this.content.wweid}`)
@@ -107,13 +109,13 @@ export class FreighterService {
   async getSeriesById(wweid: string): Promise<object | null> {
     try {
       const sqlQuery = `SELECT * FROM network_deliveries WHERE wweid="${wweid}" AND delivery_type="series" LIMIT 1`
-      const result = await this.manager.query(sqlQuery)
+      const result = await this.repo.query(sqlQuery)
       const series = JSON.parse(result[0].body).series
       series.image = JSON.parse(result[0].images)
       series.production_id = result[0].production_id
       return !result || result.length < 1 ? null : series
     } catch (error) {
-      this.logger.error(`Method: getSeriesById, wweid: ${wweid}`, error.stack)
+      this.logger.error(`Method: getSeriesById, wweid: ${wweid}`, error)
       throw new NotFoundException(`Could not find a record given the ID: ${wweid}`)
     }
   }
@@ -121,13 +123,13 @@ export class FreighterService {
   async getSeasonById(wweid: string): Promise<object | null> {
     try {
       const sqlQuery = `SELECT * FROM network_deliveries WHERE wweid="${wweid}" AND delivery_type="season" LIMIT 1`
-      const result = await this.manager.query(sqlQuery)
+      const result = await this.repo.query(sqlQuery)
       const season = JSON.parse(result[0].body).season
       season.image = JSON.parse(result[0].images)
       season.production_id = result[0].production_id
       return !result || result.length < 1 ? null : season
     } catch (error) {
-      this.logger.error(`Method: getSeasonById, wweid: ${wweid}`, error.stack)
+      this.logger.error(`Method: getSeasonById, wweid: ${wweid}`, error)
       throw new NotFoundException(`Could not find a record given the ID: ${wweid}`)
     }
   }
@@ -140,7 +142,7 @@ export class FreighterService {
 
       const output = {}
       const entriesQuery = `SELECT production_id, md5 FROM network_deliveries WHERE production_id IN ${value}`
-      const entries = await this.manager.query(entriesQuery)
+      const entries = await this.repo.query(entriesQuery)
 
       for (const entry of entries) {
         output[entry.production_id] = entry.md5
@@ -157,7 +159,7 @@ export class FreighterService {
 
       return output
     } catch (error) {
-      this.logger.error(`Method: getVocab, `, error.stack)
+      this.logger.error(`Method: getVocab, `, error)
       throw new NotFoundException("Could not find a vocab records")
     }
   }
@@ -165,7 +167,7 @@ export class FreighterService {
   async isVocabEnabled(vocab?: string) {
     try {
       const sqlQuery = `SELECT value FROM app_config WHERE flag="enabled_vocabularies" AND active=1 LIMIT 1`
-      const enabled = await this.manager.query(sqlQuery)
+      const enabled = await this.repo.query(sqlQuery)
       if (!enabled || (vocab !== undefined && enabled[0].value.indexOf(vocab) < 0)) {
         throw new NotFoundException("Could not load application configuration.")
       }
@@ -183,7 +185,7 @@ export class FreighterService {
       }
 
       const typeDetailsQuery = `SELECT body, md5 FROM network_deliveries WHERE delivery_type="controlled_vocabulary" AND production_id="${vocab}" AND enabled=1 LIMIT 1`
-      const typeDetails = await this.manager.query(typeDetailsQuery)
+      const typeDetails = await this.repo.query(typeDetailsQuery)
 
       // const location = `controlled_vocabularies/${vocab}.json`
 
@@ -192,36 +194,36 @@ export class FreighterService {
       // return typeDetails ? JSON.parse(typeDetails[0].body) : JSON.parse(remote.body)
       return JSON.parse(typeDetails[0].body)
     } catch (error) {
-      this.logger.error(`Method: getVocabTypeDetails, `, error.stack)
+      this.logger.error(`Method: getVocabTypeDetails, `, error)
       throw error.status === 400
         ? error
         : new NotFoundException(`Could not find a record given type: ${vocab}`)
     }
   }
 
-  async getRemoteVocab(location) {
-    try {
-      const remote = await this.s3.get(location)
-      if (!remote) {
-        return undefined
-      }
+  // async getRemoteVocab(location) {
+  //   try {
+  //     const remote = await this.s3.get(location)
+  //     if (!remote) {
+  //       return undefined
+  //     }
 
-      return {
-        lmod: new Date(remote["LastModified"]),
-        body: JSON.parse(remote.Body.toString()),
-        md5:
-          remote.Metadata.md5 !== undefined ? remote.Metadata.md5 : remote.ETag.replace(/"/gi, "")
-      }
-    } catch (error) {
-      this.logger.error(`Method: getRemoteVocab, `, error.stack)
-      throw new NotFoundException()
-    }
-  }
+  //     return {
+  //       lmod: new Date(remote["LastModified"]),
+  //       body: JSON.parse(remote.Body.toString()),
+  //       md5:
+  //         remote.Metadata.md5 !== undefined ? remote.Metadata.md5 : remote.ETag.replace(/"/gi, "")
+  //     }
+  //   } catch (error) {
+  //     this.logger.error(`Method: getRemoteVocab, `, error)
+  //     throw new NotFoundException()
+  //   }
+  // }
 
   async getSupplementalTo(wweid: string): Promise<object> {
     try {
       const query = `SELECT cv_wweid, wweid_source FROM network_deliveries WHERE wweid="${wweid}"`
-      const result = await this.manager.query(query)
+      const result = await this.repo.query(query)
       if (result[0].cv_wweid === null) {
         throw new NotFoundException()
       }
@@ -267,7 +269,7 @@ export class FreighterService {
         })
       )
     } catch (error) {
-      this.logger.error(`Method: getSignedURL, error: `, error.stack)
+      this.logger.error(`Method: getSignedURL, error: `, error)
     }
   }
 }
