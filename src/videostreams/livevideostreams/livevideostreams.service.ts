@@ -1,4 +1,4 @@
-import { Injectable, Logger, HttpService, InternalServerErrorException } from "@nestjs/common"
+import { Injectable, Logger, HttpService, BadRequestException } from "@nestjs/common"
 import { LiveVideoStreamsRepository } from "./livevideostreams.repository"
 import { ConfigService } from "@nestjs/config"
 import { LiveStreamParams } from "../dto/live-stream-params.dto"
@@ -55,7 +55,7 @@ export class LivevideostreamsService {
       return await this.storeLiveVideoStream()
     } catch (error) {
       this.logger.error(`Method: storeLiveStreamForPartner`, error.stack)
-      throw new InternalServerErrorException()
+      throw new BadRequestException()
     }
   }
 
@@ -64,7 +64,7 @@ export class LivevideostreamsService {
       return await this.repo.getLiveStreamsForPartner(partnerLiveStreamParams)
     } catch (error) {
       this.logger.error(`Method: getLiveStreamsForPartner`, error.stack)
-      throw new InternalServerErrorException()
+      throw new BadRequestException()
     }
   }
 
@@ -73,7 +73,7 @@ export class LivevideostreamsService {
       return await this.repo.getActiveLiveStreamForPartner(partnerLiveStreamParams)
     } catch (error) {
       this.logger.error(`Method: getLiveStreamsForPartner`, error.stack)
-      throw new InternalServerErrorException()
+      throw new BadRequestException()
     }
   }
 
@@ -113,7 +113,7 @@ export class LivevideostreamsService {
       }
     } catch (error) {
       this.logger.error(`Method: tokenizeUrl`, error)
-      throw new InternalServerErrorException()
+      throw new BadRequestException()
     }
   }
 
@@ -133,7 +133,7 @@ export class LivevideostreamsService {
       return tokenizedUrl
     } catch (error) {
       this.logger.error(`Method: testTokenizedUrl`, error)
-      throw new InternalServerErrorException()
+      throw new BadRequestException()
     }
   }
 
@@ -157,7 +157,7 @@ export class LivevideostreamsService {
         })}, error code: ${error.code}`,
         error.stack
       )
-      throw new InternalServerErrorException()
+      throw new BadRequestException()
     }
   }
 
@@ -184,7 +184,7 @@ export class LivevideostreamsService {
         })}, error code: ${error.code}`,
         error.stack
       )
-      throw new InternalServerErrorException()
+      throw new BadRequestException()
     }
   }
 

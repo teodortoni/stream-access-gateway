@@ -1,5 +1,5 @@
 import { Injectable, HttpService, Logger, NotFoundException } from "@nestjs/common"
-import { FreighterService } from "src/freighter/freighter.service"
+import { FreighterService } from "../freighter/freighter.service"
 
 @Injectable()
 export class ContentmetadataService {

@@ -1,6 +1,6 @@
 import { EntityRepository, Repository } from "typeorm"
 import { LiveVideoStreams } from "../../entities/live-video-streams.entity"
-import { Logger, InternalServerErrorException } from "@nestjs/common"
+import { Logger, BadRequestException } from "@nestjs/common"
 import { VideoStreamRecord } from "../dto/video-stream-record.dto"
 import { PartnerLiveStreamParams } from "../dto/partner-live-stream-params.dto"
 
@@ -23,8 +23,8 @@ export class LiveVideoStreamsRepository extends Repository<LiveVideoStreams> {
       await liveVideoStream.save()
       return liveVideoStream
     } catch (error) {
-      this.logger.error(`Method: store, data: ${JSON.stringify(record)}, ${error}`, error.stack)
-      throw new InternalServerErrorException()
+      this.logger.error(`Method: store, data: ${JSON.stringify(record)}, ${error}`, error)
+      throw new BadRequestException()
     }
   }
 
@@ -41,7 +41,7 @@ export class LiveVideoStreamsRepository extends Repository<LiveVideoStreams> {
         `Method: deactivateActiveStream, data: ${JSON.stringify(record)}, ${error}`,
         error.stack
       )
-      throw new InternalServerErrorException()
+      throw new BadRequestException()
     }
   }
 
@@ -55,8 +55,8 @@ export class LiveVideoStreamsRepository extends Repository<LiveVideoStreams> {
       liveVideoStream.expiresAt = expiresAt
       return await liveVideoStream.save()
     } catch (error) {
-      this.logger.error(`Method: store, data: ${JSON.stringify(record)}, ${error}`, error.stack)
-      throw new InternalServerErrorException()
+      this.logger.error(`Method: store, data: ${JSON.stringify(record)}`, error)
+      throw new BadRequestException()
     }
   }
 
@@ -68,12 +68,10 @@ export class LiveVideoStreamsRepository extends Repository<LiveVideoStreams> {
       return await this.find({ where: { clientId, applicationId } })
     } catch (error) {
       this.logger.error(
-        `Method: getLiveStreamsForPartner, data: ${JSON.stringify(
-          partnerLiveStreamParams
-        )}, ${error}`,
-        error.stack
+        `Method: getLiveStreamsForPartner, data: ${JSON.stringify(partnerLiveStreamParams)}`,
+        error
       )
-      throw new InternalServerErrorException()
+      throw new BadRequestException()
     }
   }
 
@@ -85,12 +83,10 @@ export class LiveVideoStreamsRepository extends Repository<LiveVideoStreams> {
       return await this.findOne({ where: { clientId, applicationId, isActive: true } })
     } catch (error) {
       this.logger.error(
-        `Method: getLiveStreamsForPartner, data: ${JSON.stringify(
-          partnerLiveStreamParams
-        )}, ${error}`,
-        error.stack
+        `Method: getLiveStreamsForPartner, data: ${JSON.stringify(partnerLiveStreamParams)}`,
+        error
       )
-      throw new InternalServerErrorException()
+      throw new BadRequestException()
     }
   }
 }
