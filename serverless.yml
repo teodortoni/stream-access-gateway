@@ -28,8 +28,6 @@ provider:
     subnetIds:
       - ${env:AWS_OWN_VPC_SUBNET_1}
       - ${env:AWS_OWN_VPC_SUBNET_2}
-      - ${env:AWS_OWN_VPC_SUBNET_3}
-      - ${env:AWS_OWN_VPC_SUBNET_4}
 
   iam:
     role:
