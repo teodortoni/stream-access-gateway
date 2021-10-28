@@ -6,6 +6,7 @@ import { Server } from "http"
 import * as express from "express"
 import { eventContext } from "aws-serverless-express/middleware"
 import { proxy, createServer } from "aws-serverless-express"
+import * as helmet from "helmet"
 
 let cachedServer: Server
 
@@ -19,6 +20,7 @@ async function bootstrapServer(): Promise<Server> {
   if (!cachedServer) {
     const expressApp = express()
     const app = await NestFactory.create(AppModule, new ExpressAdapter(expressApp))
+    app.use(helmet())
     app.enableCors({
       origin: true,
       preflightContinue: true,
