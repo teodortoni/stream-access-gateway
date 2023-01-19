@@ -8,7 +8,7 @@ async function bootstrap() {
   const logger = new Logger("bootstrap")
 
   const app = await NestFactory.create(AppModule)
-  app.use(helmet)
+  app.use(helmet())
   app.enableCors({
     origin: true,
     preflightContinue: false,

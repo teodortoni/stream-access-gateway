@@ -46,7 +46,7 @@ export class FreighterService {
       const sqlQuery = `SELECT * FROM network_deliveries 
             JOIN sony_deliveries
             ON sony_deliveries.wweid=network_deliveries.cv_wweid
-            WHERE sony_deliveries.wweid="${wweid}"`
+            WHERE sony_deliveries.wweid="${wweid}" AND sony_deliveries.deleted_at IS NULL`
       let content = await this.repo.query(sqlQuery)
       if (content.length > 0 && content !== undefined) {
         content = content[0]
