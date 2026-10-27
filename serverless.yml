@@ -27,7 +27,7 @@ package:
   exclude:
     - node_modules
     - .git/**
-    - .GitHub/**
+    - .github/**
     - config/**
     - coverage/**
     - scripts/**
@@ -36,7 +36,7 @@ package:
     - .env.example
     - .eslintrc.js
     - .gitignore
-    - .GitHub-ci.yml
+    - .github/workflows/ci.yml
     - .prettierrc
     - nest-cli.json
     - notes.js
@@ -46,7 +46,7 @@ package:
     - README.md
 
 functions:
-  runstream-access-gateway:
+  runstreamaccessgateway:
     handler: dist/src/lambda.handler
     name: stream-access-gateway-${env:AWS_OWN_STAGE, dev}-${env:AWS_LAMBDA_NAME}
     # timeout: 12

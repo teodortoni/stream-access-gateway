@@ -3,7 +3,8 @@ dotenv.config()
 
 export default () => ({
   api: {
-    current: "v1"
+    current: "v1",
+    contentBaseUrl: process.env.CONTENT_API_BASE_URL || "https://api.example.com/v2"
   },
   app: {
     port: parseInt(process.env.PORT, 10) || 3010,

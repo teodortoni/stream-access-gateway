@@ -19,7 +19,7 @@ export class VideoStreams extends BaseEntity {
   applicationId: string
 
   @Column({ type: "uuid", length: 36 })
-  contentVersionWweid: string
+  contentVersionId: string
 
   @Column({ type: "text" })
   token: string

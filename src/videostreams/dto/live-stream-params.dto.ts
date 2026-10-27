@@ -14,7 +14,7 @@ export class LiveStreamParams {
   @IsString()
   @MaxLength(36)
   @IsOptional()
-  contentVersionWweid: string
+  contentVersionId: string
 
   @IsString()
   @IsNotEmpty()

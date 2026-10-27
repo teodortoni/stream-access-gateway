@@ -47,11 +47,11 @@ export class LiveVideoStreamsRepository extends Repository<LiveVideoStreams> {
 
   async updateStream(record): Promise<LiveVideoStreams> {
     try {
-      const { id, token, tokenizedPath, contentVersionWweid, expiresAt } = record
+      const { id, token, tokenizedPath, contentVersionId, expiresAt } = record
       const liveVideoStream = await this.findOne(id)
       liveVideoStream.token = token
       liveVideoStream.tokenizedPath = tokenizedPath
-      liveVideoStream.contentVersionWweid = contentVersionWweid
+      liveVideoStream.contentVersionId = contentVersionId
       liveVideoStream.expiresAt = expiresAt
       return await liveVideoStream.save()
     } catch (error) {

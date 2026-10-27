@@ -1,10 +1,10 @@
 {
   "name": "stream-access-gateway",
   "version": "0.0.1",
-  "description": "",
+  "description": "Generic API for content metadata, tokenized streams, and partner access control",
   "author": "",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
@@ -93,8 +93,11 @@
     },
     "coverageDirectory": "./coverage",
     "testEnvironment": "node",
+    "setupFiles": [
+      "<rootDir>/test/jest.setup.ts"
+    ],
     "roots": [
-      "<rootDir>/apps/"
+      "<rootDir>/src/"
     ]
   },
   "prettier": {

@@ -1,7 +1,7 @@
 export class VideoStreamRecord {
   clientId: string
   applicationId: string
-  contentVersionWweid: string
+  contentVersionId: string
   token: string
   path: string
   tokenizedPath: string

@@ -19,7 +19,7 @@ export class LiveVideoStreams extends BaseEntity {
   applicationId: string
 
   @Column({ type: "uuid", length: 36, nullable: true })
-  contentVersionWweid: string
+  contentVersionId: string
 
   @Column({ type: "text", nullable: true })
   token: string

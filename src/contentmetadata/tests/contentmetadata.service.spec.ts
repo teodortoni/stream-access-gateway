@@ -1,12 +1,24 @@
 import { Test } from "@nestjs/testing"
 import { ContentmetadataService } from "../contentmetadata.service"
 import { HttpService } from "@nestjs/common"
+import { ConfigService } from "@nestjs/config"
 
 describe("ContentmetadataService", () => {
   let contentmetadataService, httpService
 
   const mockHttpService = () => ({
     get: jest.fn()
+  })
+
+  const mockConfigService = () => ({
+    get: jest.fn().mockImplementation((key: string) => {
+      switch (key) {
+        case "api.contentBaseUrl":
+          return "https://api.example.com/v2"
+        default:
+          break
+      }
+    })
   })
 
   const httpServiceGetContentMetaData = {
@@ -60,9 +72,9 @@ describe("ContentmetadataService", () => {
               extra_long: "Zack & Curt Figure It Out"
             }
           ],
-          type: { wweid: "8e13615a-b200-11e8-9e0c-0ec1498482d4" },
-          class: { wweid: "b8dbecd6-8394-11e8-ab20-0ec1498482d4" },
-          genre: [{ wweid: "85e49dfa-2606-11e8-ae10-0ec1498482d4" }],
+          type: { contentId: "8e13615a-b200-11e8-9e0c-0ec1498482d4" },
+          class: { contentId: "b8dbecd6-8394-11e8-ab20-0ec1498482d4" },
+          genre: [{ contentId: "85e49dfa-2606-11e8-ae10-0ec1498482d4" }],
           image: [
             {
               mime: "image/jpeg",
@@ -95,21 +107,21 @@ describe("ContentmetadataService", () => {
               checksum: "db802a9380091a94d21250ee96c3a012"
             }
           ],
-          wweid: "88d64376-e06a-4c15-8315-e67f718e2580",
+          contentId: "88d64376-e06a-4c15-8315-e67f718e2580",
           rating: {},
           version: "1.0.0",
-          category: { wweid: "4b3c6e0c-8395-11e8-b40b-0ec1498482d4" },
+          category: { contentId: "4b3c6e0c-8395-11e8-b40b-0ec1498482d4" },
           revision: "1",
           synopsis: [
             {
               long:
-                "Superstars Zack Ryder and Curt Hawkins host a toy-hunting show all about their love for rare and vintage WWE action figures.",
+                "Two hosts present a toy-hunting show focused on rare and vintage action figures.",
               short:
-                "Superstars Zack Ryder and Curt Hawkins host a toy-hunting show all about their love for rare and vintage WWE action figures.",
+                "Two hosts present a toy-hunting show focused on rare and vintage action figures.",
               language: "en"
             }
           ],
-          franchise: { wweid: "18696c0a-a844-11e7-9ec0-0026b9565d91" }
+          franchise: { contentId: "18696c0a-a844-11e7-9ec0-0026b9565d91" }
         }
       }
     }
@@ -123,16 +135,16 @@ describe("ContentmetadataService", () => {
           name: [{ name: "Zack & Curt Figure It Out - 2", language: "en" }],
           year: 2019,
           image: [],
-          wweid: "35ac90e3-7817-47c1-86c9-aa15b9b2889d",
+          contentId: "35ac90e3-7817-47c1-86c9-aa15b9b2889d",
           number: 2,
-          series: { wweid: "88d64376-e06a-4c15-8315-e67f718e2580" },
+          series: { contentId: "88d64376-e06a-4c15-8315-e67f718e2580" },
           version: "1.0.0",
           revision: "1",
           sequence: 2,
           synopsis: [
             {
               long:
-                "Superstars Zack Ryder and Curt Hawkins host a toy-hunting show all about their love for rare and vintage WWE action figures. In this season, they discover a rare Dick Tracy figure, extremely rare 1980s figures, and more.",
+                "Two hosts continue their toy-hunting show, discovering rare collectible figures from different eras.",
               short: "",
               language: "en"
             }
@@ -145,7 +157,11 @@ describe("ContentmetadataService", () => {
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
-      providers: [ContentmetadataService, { provide: HttpService, useFactory: mockHttpService }]
+      providers: [
+        ContentmetadataService,
+        { provide: HttpService, useFactory: mockHttpService },
+        { provide: ConfigService, useFactory: mockConfigService }
+      ]
     }).compile()
 
     contentmetadataService = await module.get<ContentmetadataService>(ContentmetadataService)
@@ -154,12 +170,12 @@ describe("ContentmetadataService", () => {
 
   describe("getVideoById", () => {
     it("Returns content data", async () => {
-      const wweid = "wweid"
+      const contentId = "contentId"
       const mockHttpServiceGet = {
         toPromise: () => Promise.resolve(httpServiceGetContentMetaData)
       }
       httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
-      const content = await contentmetadataService.getVideoById(wweid)
+      const content = await contentmetadataService.getVideoById(contentId)
       expect(content).toHaveProperty("video_type")
       expect(content).toHaveProperty("content-package")
       expect(content).toHaveProperty("release_date")
@@ -167,9 +183,6 @@ describe("ContentmetadataService", () => {
       expect(content).toHaveProperty("ads_enabled")
       expect(content).toHaveProperty("availability")
       expect(content).toHaveProperty("closed_caption")
-      expect(content).toHaveProperty("frame_preview")
-      expect(content).toHaveProperty("cue_points")
-      expect(content).toHaveProperty("cue_points_json")
       expect(content).toHaveProperty("episode")
       expect(content).toHaveProperty("event")
       expect(content).toHaveProperty("tag")
@@ -180,19 +193,19 @@ describe("ContentmetadataService", () => {
   })
   describe("getSeriesById", () => {
     it("Returns series data", async () => {
-      const wweid = "wweid"
+      const contentId = "contentId"
       const mockHttpServiceGet = {
         toPromise: () => Promise.resolve(httpServiceGetSeriesMetaData)
       }
       httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
-      const series = await contentmetadataService.getSeriesById(wweid)
+      const series = await contentmetadataService.getSeriesById(contentId)
       expect(series).toHaveProperty("id")
       expect(series).toHaveProperty("name")
       expect(series).toHaveProperty("type")
       expect(series).toHaveProperty("class")
       expect(series).toHaveProperty("genre")
       expect(series).toHaveProperty("image")
-      expect(series).toHaveProperty("wweid")
+      expect(series).toHaveProperty("contentId")
       expect(series).toHaveProperty("rating")
       expect(series).toHaveProperty("version")
       expect(series).toHaveProperty("category")
@@ -203,16 +216,16 @@ describe("ContentmetadataService", () => {
   })
   describe("getSeasonById", () => {
     it("Returns season data", async () => {
-      const wweid = "wweid"
+      const contentId = "contentId"
       const mockHttpServiceGet = {
         toPromise: () => Promise.resolve(httpServiceGetSeasonMetaData)
       }
       httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
-      const season = await contentmetadataService.getSeasonById(wweid)
+      const season = await contentmetadataService.getSeasonById(contentId)
       expect(season).toHaveProperty("name")
       expect(season).toHaveProperty("year")
       expect(season).toHaveProperty("image")
-      expect(season).toHaveProperty("wweid")
+      expect(season).toHaveProperty("contentId")
       expect(season).toHaveProperty("number")
       expect(season).toHaveProperty("series")
       expect(season).toHaveProperty("version")

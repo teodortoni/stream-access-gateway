@@ -166,7 +166,7 @@ export class LivevideostreamsService {
         token: this.edgeAuthParams.token,
         path: this.liveStreamParams.liveStreamPath,
         tokenizedPath: this.tokenizedUrl,
-        contentVersionWweid: this.liveStreamParams.contentVersionWweid,
+        contentVersionId: this.liveStreamParams.contentVersionId,
         expiresAt: this.expiresAt()
       }
       return await this.repo.updateStream(record)

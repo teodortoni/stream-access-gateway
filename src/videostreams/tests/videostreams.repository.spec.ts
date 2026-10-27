@@ -9,6 +9,7 @@ describe("Video Streams Repository", () => {
   const record: VideoStreamRecord = {
     applicationId: "testApplicationId",
     clientId: "testClientId",
+    contentVersionId: "testContentVersionId",
     token: "testToken",
     path: "testPath",
     tokenizedPath: "testTokenizedPath",

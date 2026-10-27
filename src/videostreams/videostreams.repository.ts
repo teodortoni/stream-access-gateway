@@ -12,7 +12,7 @@ export class VideoStreamsRepository extends Repository<VideoStreams> {
       const {
         clientId,
         applicationId,
-        contentVersionWweid,
+        contentVersionId,
         token,
         path,
         tokenizedPath,
@@ -21,7 +21,7 @@ export class VideoStreamsRepository extends Repository<VideoStreams> {
       const videoStream = this.create()
       videoStream.clientId = clientId
       videoStream.applicationId = applicationId
-      videoStream.contentVersionWweid = contentVersionWweid
+      videoStream.contentVersionId = contentVersionId
       videoStream.token = token
       videoStream.path = path
       videoStream.tokenizedPath = tokenizedPath

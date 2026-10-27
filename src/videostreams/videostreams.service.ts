@@ -72,6 +72,10 @@ export class VideostreamsService {
     })
   }
 
+  private getContentApiBaseUrl(): string {
+    return this.configService.get<string>("api.contentBaseUrl")
+  }
+
   setParams(videoStreamParams: VideoStreamParams) {
     this.videoStreamParams = videoStreamParams
     return this
@@ -95,7 +99,7 @@ export class VideostreamsService {
   private async setContent(): Promise<void> {
     try {
       const result = await this.httpService
-        .get(`https://freighter.wwe.com/v2/json/content/${this.videoStreamParams.videoId}`)
+        .get(`${this.getContentApiBaseUrl()}/json/content/${this.videoStreamParams.videoId}`)
         .toPromise()
         .catch((error) => {
           if (error.response && error.response.status === 404) {
@@ -117,15 +121,15 @@ export class VideostreamsService {
   private async setContentPath(): Promise<void> {
     try {
       const { videoId, format } = this.videoStreamParams
-      const contentWweid = videoId.replace(/-/g, "_")
-      const firstChar = contentWweid.substr(0, 1)
+      const contentId = videoId.replace(/-/g, "_")
+      const firstChar = contentId.substr(0, 1)
       const pathFormat = format === "m3u8" ? "hls" : format
       if (format === "json") {
-        const hlsPath = `/${firstChar}/${contentWweid}/hls/${contentWweid}.m3u8`
-        const dashPath = `/${firstChar}/${contentWweid}/mpd/${contentWweid}.mpd`
+        const hlsPath = `/${firstChar}/${contentId}/hls/${contentId}.m3u8`
+        const dashPath = `/${firstChar}/${contentId}/mpd/${contentId}.mpd`
         this.contentPath = { hlsPath, dashPath }
       } else {
-        this.contentPath = `/${firstChar}/${contentWweid}/${pathFormat}/${contentWweid}.${format}`
+        this.contentPath = `/${firstChar}/${contentId}/${pathFormat}/${contentId}.${format}`
       }
 
       await this.setManifestUrl()
@@ -162,7 +166,7 @@ export class VideostreamsService {
           .setParams({
             clientId: this.videoStreamParams.partner.clientId,
             applicationId: this.videoStreamParams.partner.applicationId,
-            contentVersionWweid: this.videoStreamParams.videoId,
+            contentVersionId: this.videoStreamParams.videoId,
             liveStreamPath: null
           })
           .getTokenizedUrl()
@@ -184,7 +188,7 @@ export class VideostreamsService {
           .setParams({
             clientId: this.videoStreamParams.partner.clientId,
             applicationId: this.videoStreamParams.partner.applicationId,
-            contentVersionWweid: this.videoStreamParams.videoId,
+            contentVersionId: this.videoStreamParams.videoId,
             liveStreamPath: null
           })
           .getTokenizedUrl()
@@ -243,7 +247,7 @@ export class VideostreamsService {
     try {
       const { episode } = this.content
       this.videoStream = {
-        id: episode.wweid,
+        id: episode.id || episode.contentId,
         manifestUrl: this.manifestUrl,
         name: episode.name,
         synopsis: episode.synopsis,
@@ -266,7 +270,7 @@ export class VideostreamsService {
       const record = {
         clientId: this.videoStreamParams.partner.clientId,
         applicationId: this.videoStreamParams.partner.applicationId,
-        contentVersionWweid: this.videoStreamParams.videoId,
+        contentVersionId: this.videoStreamParams.videoId,
         token:
           typeof this.edgeAuthParams.token === "object"
             ? JSON.stringify(this.edgeAuthParams.token)

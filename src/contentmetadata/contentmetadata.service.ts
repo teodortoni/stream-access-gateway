@@ -5,16 +5,21 @@ import {
   NotFoundException,
   InternalServerErrorException
 } from "@nestjs/common"
+import { ConfigService } from "@nestjs/config"
 
 @Injectable()
 export class ContentmetadataService {
   private logger = new Logger("ContentMetadataService")
-  constructor(private httpService: HttpService) {}
+  constructor(private httpService: HttpService, private configService: ConfigService) {}
+
+  private getContentApiBaseUrl(): string {
+    return this.configService.get<string>("api.contentBaseUrl")
+  }
 
   async getVideoById(id: string): Promise<any> {
     try {
       const response = await this.httpService
-        .get(`https://freighter.wwe.com/v2/json/content/${id}`)
+        .get(`${this.getContentApiBaseUrl()}/json/content/${id}`)
         .toPromise()
       const data = response.data.data
       const video = {}
@@ -38,7 +43,7 @@ export class ContentmetadataService {
     } catch (error) {
       this.logger.error(
         `Method: getVideoById, data: ${JSON.stringify({
-          contentVersionWweid: id
+          contentVersionId: id
         })}, ${error.message}, status: ${error.status}`,
         error.stack
       )
@@ -52,13 +57,13 @@ export class ContentmetadataService {
   async getSeriesById(id: string): Promise<any> {
     try {
       const response = await this.httpService
-        .get(`https://freighter.wwe.com/v2/json/series/${id}`)
+        .get(`${this.getContentApiBaseUrl()}/json/series/${id}`)
         .toPromise()
       return response.data.data.series
     } catch (error) {
       this.logger.error(
         `Method: getSeriesById, data: ${JSON.stringify({
-          contentVersionWweid: id
+          contentVersionId: id
         })}, ${error.message}, status: ${error.status}`,
         error.stack
       )
@@ -72,13 +77,13 @@ export class ContentmetadataService {
   async getSeasonById(id: string): Promise<any> {
     try {
       const response = await this.httpService
-        .get(`https://freighter.wwe.com/v2/json/season/${id}`)
+        .get(`${this.getContentApiBaseUrl()}/json/season/${id}`)
         .toPromise()
       return response.data.data.season
     } catch (error) {
       this.logger.error(
         `Method: getSeasonById, data: ${JSON.stringify({
-          contentVersionWweid: id
+          contentVersionId: id
         })}, ${error.message}, status: ${error.status}`,
         error.stack
       )

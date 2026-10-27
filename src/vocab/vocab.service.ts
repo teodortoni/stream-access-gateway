@@ -3,47 +3,49 @@ import {
   HttpService,
   Logger,
   NotFoundException,
-  InternalServerErrorException,
-} from '@nestjs/common';
+  InternalServerErrorException
+} from "@nestjs/common"
+import { ConfigService } from "@nestjs/config"
 
 @Injectable()
 export class VocabService {
-  private logger = new Logger('ContentMetadataService');
-  constructor(private httpService: HttpService) {}
+  private logger = new Logger("VocabService")
+  constructor(private httpService: HttpService, private configService: ConfigService) {}
+
+  private getContentApiBaseUrl(): string {
+    return this.configService.get<string>("api.contentBaseUrl")
+  }
 
   async getVocab(): Promise<any> {
     try {
       const response = await this.httpService
-        .get('https://freighter.wwe.com/v2/vocabs')
-        .toPromise();
-      return response.data.data;
+        .get(`${this.getContentApiBaseUrl()}/vocabs`)
+        .toPromise()
+      return response.data.data
     } catch (error) {
-      this.logger.error(
-        `Method: getVocab, ${error.message}, status: ${error.status}`,
-        error.stack,
-      );
+      this.logger.error(`Method: getVocab, ${error.message}, status: ${error.status}`, error.stack)
       if (error.response && error.response.status === 404) {
-        throw new NotFoundException(error.response.data.message);
+        throw new NotFoundException(error.response.data.message)
       }
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException()
     }
   }
 
-  async getVocabType(vocabulary_type: string): Promise<any> {
+  async getVocabType(vocabularyType: string): Promise<any> {
     try {
       const response = await this.httpService
-        .get(`https://freighter.wwe.com/v2/vocabs/${vocabulary_type}`)
-        .toPromise();
-      return response.data.data;
+        .get(`${this.getContentApiBaseUrl()}/vocabs/${vocabularyType}`)
+        .toPromise()
+      return response.data.data
     } catch (error) {
       this.logger.error(
         `Method: getVocabType, ${error.message}, status: ${error.status}`,
-        error.stack,
-      );
+        error.stack
+      )
       if (error.response && error.response.status === 404) {
-        throw new NotFoundException(error.response.data.message);
+        throw new NotFoundException(error.response.data.message)
       }
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException()
     }
   }
 }

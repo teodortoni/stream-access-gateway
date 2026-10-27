@@ -10,6 +10,7 @@ import {
 import { ConfigService } from "@nestjs/config"
 import { VideoStreamParams } from "../dto/video-streams-params.dto"
 import * as EdgeAuth from "akamai-edgeauth"
+import { LivevideostreamsService } from "../livevideostreams/livevideostreams.service"
 
 jest.mock("akamai-edgeauth", () => {
   return jest.fn().mockImplementation(() => {
@@ -36,6 +37,11 @@ describe("Video Streams Service", () => {
     store: jest.fn()
   })
 
+  const mockLiveVideoStreamsService = () => ({
+    setParams: jest.fn().mockReturnThis(),
+    getTokenizedUrl: jest.fn().mockResolvedValue("https://live-test.example.com/master.m3u8")
+  })
+
   const httpServiceGetData = {
     data: {
       data: {
@@ -43,14 +49,14 @@ describe("Video Streams Service", () => {
         episode: {
           name: [
             {
-              long: "WrestleMania 35",
-              short: "WrestleMania 35",
-              medium: "WrestleMania 35",
+              long: "Championship Event 35",
+              short: "Championship Event 35",
+              medium: "Championship Event 35",
               language: "en",
-              extra_long: "WrestleMania 35"
+              extra_long: "Championship Event 35"
             }
           ],
-          wweid: "ee7d26cd-e319-428f-b067-ee7d40c9f767",
+          contentId: "ee7d26cd-e319-428f-b067-ee7d40c9f767",
           rating: {
             mpaa: "TV-PG"
           },
@@ -74,6 +80,10 @@ describe("Video Streams Service", () => {
   const mockConfigService = () => ({
     get: jest.fn().mockImplementation((key: string) => {
       switch (key) {
+        case "api.contentBaseUrl":
+          return "https://api.example.com/v2"
+        case "videoStreams.hostName":
+          return "vod-test.example.com"
         case "videoStreams.encryptionKey":
           return "acf7eae71cb9f7263c4c5fe0f643c7f7"
 
@@ -107,7 +117,8 @@ describe("Video Streams Service", () => {
         { provide: ConfigService, useFactory: mockConfigService },
         VideostreamsService,
         { provide: HttpService, useFactory: mockHttpService },
-        { provide: VideoStreamsRepository, useFactory: mockVideoStreamsRepo }
+        { provide: VideoStreamsRepository, useFactory: mockVideoStreamsRepo },
+        { provide: LivevideostreamsService, useFactory: mockLiveVideoStreamsService }
       ]
     }).compile()
 
@@ -128,23 +139,23 @@ describe("Video Streams Service", () => {
       const mockHttpServiceGet = {
         toPromise: () => Promise.resolve(httpServiceGetData)
       }
-      httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
+      httpService.get = jest.fn().mockImplementation(() => mockHttpServiceGet)
       // console.log("test HttpService: ", httpService)
       const result = await videoStreamsService.setParams(videoStreamParams).getVideoStream()
       expect(result).toMatchObject({
         duration: "05:19:37",
         id: "ee7d26cd-e319-428f-b067-ee7d40c9f767",
         // manifestUrl:
-        //   "https://vod-test.sonyliv.wwe.com/e/ee7d26cd_e319_428f_b067_ee7d40c9f767/hls/ee7d26cd_e319_428f_b067_ee7d40c9f767.m3u8?hdnts=exp=1599133908~acl=/*~hmac=53ce795bb3a29e0d432303aa8897ebfa6697653c8b7e327769c4043310464662",
+        //   "https://vod-test.example.com/e/ee7d26cd_e319_428f_b067_ee7d40c9f767/hls/ee7d26cd_e319_428f_b067_ee7d40c9f767.m3u8?hdnts=exp=1599133908~acl=/*~hmac=53ce795bb3a29e0d432303aa8897ebfa6697653c8b7e327769c4043310464662",
         manifestUrl:
-          "https://vod-test.sonyliv.wwe.com/e/ee7d26cd-e319-428f-b067-ee7d40c9f767/hls/nxt34_ntwk.m3u8?hdnts=exp=1599133908~acl=/*~hmac=53ce795bb3a29e0d432303aa8897ebfa6697653c8b7e327769c4043310464662",
+          "https://vod-test.example.com/e/ee7d26cd_e319_428f_b067_ee7d40c9f767/hls/ee7d26cd_e319_428f_b067_ee7d40c9f767.m3u8?hdnts=exp=1599133908~acl=/*~hmac=53ce795bb3a29e0d432303aa8897ebfa6697653c8b7e327769c4043310464662",
         name: [
           {
-            extra_long: "WrestleMania 35",
+            extra_long: "Championship Event 35",
             language: "en",
-            long: "WrestleMania 35",
-            medium: "WrestleMania 35",
-            short: "WrestleMania 35"
+            long: "Championship Event 35",
+            medium: "Championship Event 35",
+            short: "Championship Event 35"
           }
         ],
         rating: "TV-PG",
@@ -174,7 +185,7 @@ describe("Video Streams Service", () => {
       const mockHttpServiceGet = {
         toPromise: () => Promise.resolve(httpServiceGetData)
       }
-      httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
+      httpService.get = jest.fn().mockImplementation(() => mockHttpServiceGet)
       videoStreamParams.videoId = null
       expect(videoStreamsService.setParams(videoStreamParams).getVideoStream()).rejects.toThrow(
         new InternalServerErrorException()
@@ -186,9 +197,11 @@ describe("Video Streams Service", () => {
         // toPromise: () => Promise.resolve(httpServiceGetData)
         toPromise: () => Promise.reject(new UnauthorizedException())
       }
-      httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
-      const testManifestUrlSpy = jest.spyOn(VideostreamsService.prototype as any, "testManifestUrl")
-      console.log(testManifestUrlSpy)
+      httpService.get = jest.fn().mockImplementation(() => mockHttpServiceGet)
+      const testManifestUrlSpy = jest.spyOn(
+        VideostreamsService.prototype as any,
+        "testManifestUrlRequest"
+      )
       expect(testManifestUrlSpy).not.toHaveBeenCalled()
       videoStreamParams.videoId = null
       expect(videoStreamsService.setParams(videoStreamParams).getVideoStream()).rejects.toThrow(
@@ -202,7 +215,7 @@ describe("Video Streams Service", () => {
       const mockHttpServiceGet = {
         toPromise: () => Promise.resolve(httpServiceGetData)
       }
-      httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
+      httpService.get = jest.fn().mockImplementation(() => mockHttpServiceGet)
       expect(videoStreamsService.setParams(videoStreamParams).getVideoStream()).rejects.toThrow(
         new InternalServerErrorException()
       )
@@ -215,7 +228,7 @@ describe("Video Streams Service", () => {
       const mockHttpServiceGet = {
         toPromise: () => Promise.resolve(httpServiceGetData)
       }
-      httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
+      httpService.get = jest.fn().mockImplementation(() => mockHttpServiceGet)
       expect(videoStreamsService.setParams(videoStreamParams).getVideoStream()).rejects.toThrow(
         new InternalServerErrorException()
       )
@@ -227,7 +240,7 @@ describe("Video Streams Service", () => {
       const mockHttpServiceGet = {
         toPromise: () => Promise.resolve(httpServiceGetData)
       }
-      httpService.get = jest.fn().mockImplementationOnce(() => mockHttpServiceGet)
+      httpService.get = jest.fn().mockImplementation(() => mockHttpServiceGet)
       videoStreamsRepo.store = jest.fn().mockRejectedValue(Error)
       expect(videoStreamsService.setParams(videoStreamParams).getVideoStream()).rejects.toThrow(
         new InternalServerErrorException()
