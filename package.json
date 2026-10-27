@@ -4,7 +4,7 @@
   "description": "Generic API for content metadata, tokenized streams, and partner access control",
   "author": "",
   "private": true,
-  "license": "MIT",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",

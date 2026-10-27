@@ -9,6 +9,11 @@ This project is a NestJS-based API for:
 
 It is intended as a generic backend foundation for content distribution integrations.
 
+## License
+
+This project is licensed under [PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0/).
+Commercial use is not permitted under this license.
+
 ## Tech Stack
 
 - [NestJS](https://docs.nestjs.com/)
